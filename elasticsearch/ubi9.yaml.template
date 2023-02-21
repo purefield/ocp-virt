@@ -16,9 +16,13 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: ubi9
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"kibana"}]'
   labels:
     app: ubi9
     app.kubernetes.io/part-of: utility
+    app.openshift.io/runtime: redhat
+    app.openshift.io/name: utility
   namespace: {{ namespace }}
 spec:
   volumes:

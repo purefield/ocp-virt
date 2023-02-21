@@ -2,12 +2,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
   name: kibana
   namespace: {{ namespace }}
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
   labels:
     app.kubernetes.io/part-of: kibana
+    app.openshift.io/runtime: elastic
+    app.openshift.io/name: kibana
 spec:
   replicas: 1
   selector:

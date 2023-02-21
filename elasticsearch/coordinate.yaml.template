@@ -21,8 +21,12 @@ kind: Deployment
 metadata:
   name: coordinate
   namespace: {{ namespace }}
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master00"},{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master01"},{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master02"}]'
   labels:
     app.kubernetes.io/part-of: elasticsearch
+    app.openshift.io/runtime: elastic
+    app.openshift.io/name: coordinate
 spec:
   replicas: 1
   selector:
