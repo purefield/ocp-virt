@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-install
+  namespace: {{ namespace }}
+data:
+  elasticsearch.sh: |-
+    subscription-manager register --activationkey {{ subscriptionKey }} --org {{ subscriptionOrg }}
+    subscription-manager attach --auto
+    cat << EOF > /etc/yum.repos.d/elastic.repo
+    [elasticsearch]
+    name=Elasticsearch repository for 8.x packages
+    baseurl=https://artifacts.elastic.co/packages/8.x/yum
+    gpgcheck=1
+    gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled=0
+    autorefresh=1
+    type=rpm-md
+    EOF
+    update-crypto-policies --set DEFAULT:SHA1
+    rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dnf install -y --enablerepo=elasticsearch elasticsearch
+    update-crypto-policies --set DEFAULT
+    systemctl daemon-reload
+    mkdir -p /srv/elasticsearch/config
+    mkdir -p /srv/elasticsearch/data
+    chown elasticsearch:elasticsearch /srv/elasticsearch -R
+    mkfs.xfs /dev/vdc
+    config=$(for disk in sda sdb; do hdparm -i /dev/$disk | grep SerialNo=00yaml -B 2 | head -n1 | cut -d\: -f 1; done)
+    mount $config /srv/elasticsearch/config
+    mount /dev/vdc /srv/elasticsearch/data
+    echo "$config /srv/elasticsearch/config xfs defaults 0 0" >> /etc/fstab
+    echo '/dev/vdc /srv/elasticsearch/data   xfs defaults 0 0' >> /etc/fstab
+    mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.org
+    mv /etc/elasticsearch/jvm.options       /etc/elasticsearch/jvm.options.org
+    ln -sf /srv/elasticsearch/config/elasticsearch.conf /etc/elasticsearch/elasticsearch.yml
+    ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
+    systemctl enable elasticsearch --now
+immutable: false
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: es-master-svc
+  namespace: {{ namespace }}
+spec:
+  ports:
+    - name: elasticsearch
+      protocol: TCP
+      port: 9200
+      targetPort: 9200
+  selector:
+    app: elasticsearch
+    elasticsearch: master
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: elasticsearch
+  namespace: {{ namespace }}
+spec:
+  host: elasticsearch.apps.ocp.webwim.com
+  to:
+    kind: Service
+    name: es-master-svc
+  port:
+    targetPort: elasticsearch
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

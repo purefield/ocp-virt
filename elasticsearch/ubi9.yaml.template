@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ubi9-install
+  namespace: {{ namespace }}
+data:
+  install.sh: |-
+    mkdir /root/.ssh/
+    chmod 700 /root/.ssh/
+    yum install -y openssh-clients rsync
+    /bin/sh
+immutable: false
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubi9
+  labels:
+    app: ubi9
+    app.kubernetes.io/part-of: utility
+  namespace: {{ namespace }}
+spec:
+  volumes:
+    - configMap:
+        name: ubi9-install
+      name: ubi9-install
+  containers:
+    - name: ubi9
+      image: 'registry.access.redhat.com/ubi9/ubi'
+      command: ["/bin/sh"]
+      args: ["/usr/local/bin/install.sh"]
+      stdin: true
+      tty: true
+      volumeMounts:
+        - name: ubi9-install
+          readOnly: true
+          mountPath: /usr/local/bin/install.sh
+          subPath: install.sh

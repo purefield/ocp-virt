@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rhel9-white-tyrannosaurus-app
+  namespace: multi-cloud
+spec:
+  selector:
+    vm.kubevirt.io/name: rhel9-white-tyrannosaurus
+  ports:
+    - protocol: TCP
+      name: app
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rhel9-white-tyrannosaurus-app
+  namespace: multi-cloud
+spec:
+  selector:
+    vm.kubevirt.io/name: rhel9-white-tyrannosaurus
+  ports:
+    - protocol: TCP
+      name: app
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+  internalTrafficPolicy: Cluster
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: hello-tomcat
+  namespace: multi-cloud
+spec:
+  host: hello-tomcat.apps.jw8p2.dynamic.opentlc.com
+  to:
+    kind: Service
+    name: rhel9-white-tyrannosaurus-app
+    weight: 100
+  port:
+    targetPort: 8080
+  wildcardPolicy: None

@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
+  name: kibana
+  namespace: {{ namespace }}
+  labels:
+    app.kubernetes.io/part-of: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:8.6.2
+          ports:
+            - containerPort: 5601
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: http://coordinate:9200
+            - name: SERVER_PUBLICBASEURL
+              value: https://kibana-demo.apps.ocp.webwim.com
+            - name: SERVER_NAME
+              value: kibana-demo.apps.ocp.webwim.com
+          resources: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: {{ namespace }}
+spec:
+  ports:
+    - name: ui
+      port: 5601
+      targetPort: 5601
+  selector:
+    app: kibana
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kibana
+  namespace: {{ namespace }}
+spec:
+  host: kibana-demo.apps.ocp.webwim.com
+  to:
+    kind: Service
+    name: kibana
+  port:
+    targetPort: ui
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
