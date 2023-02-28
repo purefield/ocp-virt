@@ -95,7 +95,7 @@ spec:
             - ReadWriteMany
           resources:
             requests:
-              storage: 32Gi
+              storage: 30Gi
           storageClassName: ocs-storagecluster-ceph-rbd
           volumeMode: Block
   running: true
