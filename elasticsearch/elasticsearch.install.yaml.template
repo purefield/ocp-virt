@@ -27,7 +27,8 @@ data:
     mkdir -p /srv/elasticsearch/data
     chown elasticsearch:elasticsearch /srv/elasticsearch -R
     mkfs.xfs /dev/vdc
-    mount /dev/disk/by-id/scsi-SATA*00yaml /srv/elasticsearch/config
+    config=$(ls -1 /dev/disk/by-id/scsi-SATA*00yaml)
+    mount $config /srv/elasticsearch/config
     mount /dev/vdc /srv/elasticsearch/data
     echo "$config /srv/elasticsearch/config xfs defaults 0 0" >> /etc/fstab
     echo '/dev/vdc /srv/elasticsearch/data   xfs defaults 0 0' >> /etc/fstab
