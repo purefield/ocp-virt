@@ -185,7 +185,7 @@ metadata:
   name: {{ name }}
   namespace: {{ namespace }}
 spec:
-  host: {{ name }}.apps.ocp.webwim.com
+  host: {{ name }}.{{ baseDomain }}
   to:
     kind: Service
     name: {{ name }}

@@ -13,16 +13,19 @@ fi
 echo "$namespace" > namespace.last
 source ../subscription.txt
 oc get project $namespace > /dev/null 2>&1 || oc new-project $namespace
+baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
 for name in es-master00 es-master01 es-master02; do
   cat elasticsearch.master.vm.yaml.template | \
       perl -pe "s/\{\{ name \}\}/$name/g" | \
       perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
+      perl -pe "s/\{\{ baseDomain \}\}/$baseDomain/g" | \
       perl -MMIME::Base64 -pe "s/\{\{ sshPubKey \}\}/decode_base64('$sshPubKey')/ge" \
   > $name.vm.yaml
   oc apply -f $name.vm.yaml
 done
 cat elasticsearch.install.yaml.template kibana.yaml.template coordinate.yaml.template ubi9.yaml.template | \
   perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
+  perl -pe "s/\{\{ baseDomain \}\}/$baseDomain/g" | \
   perl -pe "s/\{\{ subscriptionOrg \}\}/$subscriptionOrg/g" | \
   perl -pe "s/\{\{ subscriptionKey \}\}/$subscriptionKey/g" | \
 oc apply -f -

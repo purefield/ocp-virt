@@ -61,7 +61,7 @@ metadata:
   name: elasticsearch
   namespace: {{ namespace }}
 spec:
-  host: elasticsearch.apps.ocp.webwim.com
+  host: elasticsearch.{{ baseDomain }}
   to:
     kind: Service
     name: es-master-svc

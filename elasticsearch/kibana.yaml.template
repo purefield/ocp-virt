@@ -38,9 +38,9 @@ spec:
             - name: ELASTICSEARCH_HOSTS
               value: http://coordinate:9200
             - name: SERVER_PUBLICBASEURL
-              value: https://kibana-demo.apps.ocp.webwim.com
+              value: https://kibana-demo.{{ baseDomain }}
             - name: SERVER_NAME
-              value: kibana-demo.apps.ocp.webwim.com
+              value: kibana-demo.{{ baseDomain }}
           resources: {}
       restartPolicy: Always
 ---
@@ -63,7 +63,7 @@ metadata:
   name: kibana
   namespace: {{ namespace }}
 spec:
-  host: kibana-demo.apps.ocp.webwim.com
+  host: kibana-demo.{{ baseDomain }}
   to:
     kind: Service
     name: kibana
