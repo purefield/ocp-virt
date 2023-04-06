@@ -57,6 +57,10 @@ spec:
       protocol: TCP
       port: 22
       targetPort: 22
+    - name: cockpit
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -174,3 +178,20 @@ spec:
         - configMap:
             name: elasticsearch-install
           name: elasticsearch-sh
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+spec:
+  host: {{ name }}.apps.ocp.webwim.com
+  to:
+    kind: Service
+    name: {{ name }}
+  port:
+    targetPort: cockpit
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

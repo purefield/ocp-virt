@@ -37,6 +37,7 @@ data:
     ln -sf /srv/elasticsearch/config/elasticsearch.conf /etc/elasticsearch/elasticsearch.yml
     ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
     systemctl enable elasticsearch --now
+    systemctl enable cockpit.socket --now
 immutable: false
 ---
 kind: Service
