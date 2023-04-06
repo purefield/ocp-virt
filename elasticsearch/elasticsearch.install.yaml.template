@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: elasticsearch-install
+  name: install-scripts
   namespace: {{ namespace }}
 data:
   elasticsearch.sh: |-
@@ -37,6 +37,7 @@ data:
     ln -sf /srv/elasticsearch/config/elasticsearch.conf /etc/elasticsearch/elasticsearch.yml
     ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
     systemctl enable elasticsearch --now
+  system.sh: |-
     systemctl enable cockpit.socket --now
 immutable: false
 ---

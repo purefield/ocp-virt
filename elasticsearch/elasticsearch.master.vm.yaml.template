@@ -134,7 +134,7 @@ spec:
               serial: 00yaml
             - disk:
                 bus: sata
-              name: elasticsearch-sh
+              name: install-scripts
               serial: 0000sh
             - disk:
                 bus: virtio
@@ -164,6 +164,7 @@ spec:
               hostname: {{ name }}
               runcmd: 
                 - mount /dev/disk/by-id/scsi-SATA*0000sh /mnt/
+                - bash /mnt/system.sh
                 - bash /mnt/elasticsearch.sh
                 - umount /mnt
               user: elasticsearch
@@ -176,8 +177,8 @@ spec:
             name: {{ name }}-conf
           name: elasticsearch-yaml
         - configMap:
-            name: elasticsearch-install
-          name: elasticsearch-sh
+            name: install-scripts
+          name: install-scripts
 ---
 kind: Route
 apiVersion: route.openshift.io/v1
