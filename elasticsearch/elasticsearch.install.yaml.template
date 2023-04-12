@@ -20,7 +20,7 @@ data:
     EOF
     update-crypto-policies --set DEFAULT:SHA1
     rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    dnf install -y --enablerepo=elasticsearch elasticsearch
+    dnf install -y --enablerepo=elasticsearch elasticsearch-8.7.0
     update-crypto-policies --set DEFAULT
     systemctl daemon-reload
     mkdir -p /srv/elasticsearch/config
