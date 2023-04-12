@@ -77,3 +77,20 @@ spec:
             value: _site_
           resources: {}
       restartPolicy: Always
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: coordinate
+  namespace: {{ namespace }}
+spec:
+  host: coordinate.{{ baseDomain }}
+  to:
+    kind: Service
+    name: coordinate
+  port:
+    targetPort: elasticsearch
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
