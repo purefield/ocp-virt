@@ -44,7 +44,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: coordinate
-          image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2-amd64
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0-amd64
           ports:
             - containerPort: 9200
             - containerPort: 9300
