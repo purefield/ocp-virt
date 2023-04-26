@@ -29,6 +29,9 @@ spec:
     - configMap:
         name: ubi9-install
       name: ubi9-install
+    - secret:
+        secretName: id-rsa
+      name: id-rsa
   containers:
     - name: ubi9
       image: 'registry.access.redhat.com/ubi9/ubi'
@@ -41,3 +44,7 @@ spec:
           readOnly: true
           mountPath: /usr/local/bin/install.sh
           subPath: install.sh
+        - name: id-rsa
+          readOnly: true
+          mountPath: /root/.ssh/id_rsa
+          subPath: id-rsa
