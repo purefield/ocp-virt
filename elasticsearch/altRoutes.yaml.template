@@ -56,7 +56,7 @@ metadata:
   name: es-master00-cockpit
   namespace: {{ namespace }}
 spec:
-  host: es-master00-cockpit.{{ altDomain }}
+  host: es-master00.{{ altDomain }}
   to:
     kind: Service
     name: es-master00 
@@ -73,7 +73,7 @@ metadata:
   name: es-master01-cockpit
   namespace: {{ namespace }}
 spec:
-  host: es-master01-cockpit.{{ altDomain }}
+  host: es-master01.{{ altDomain }}
   to:
     kind: Service
     name: es-master01 
@@ -90,7 +90,7 @@ metadata:
   name: es-master02-cockpit
   namespace: {{ namespace }}
 spec:
-  host: es-master02-cockpit.{{ altDomain }}
+  host: es-master02.{{ altDomain }}
   to:
     kind: Service
     name: es-master02 
