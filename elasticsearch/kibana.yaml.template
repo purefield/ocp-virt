@@ -20,20 +20,20 @@ spec:
       labels:
         app: kibana
     spec:
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
+      # securityContext:
+      #   seccompProfile:
+      #     type: RuntimeDefault
       containers:
         - name: kibana
           image: docker.elastic.co/kibana/kibana:8.7.0
           ports:
             - containerPort: 5601
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
+          # securityContext:
+          #   allowPrivilegeEscalation: false
+          #   runAsNonRoot: true
+          #   capabilities:
+          #     drop:
+          #       - ALL
           env:
             - name: ELASTICSEARCH_HOSTS
               value: http://coordinate:9200
