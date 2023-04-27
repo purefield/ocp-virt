@@ -63,7 +63,7 @@ metadata:
   name: kibana
   namespace: {{ namespace }}
 spec:
-  host: kibana-demo.{{ baseDomain }}
+  host: kibana.{{ baseDomain }}
   to:
     kind: Service
     name: kibana
