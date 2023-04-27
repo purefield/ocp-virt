@@ -1,6 +1,6 @@
 namespace=$1
 lastNamespace=$(cat namespace.last)
-lastNamespace=${lastNamespace:-hybrid-virt}
+lastNamespace=${lastNamespace:-next-gen-virt}
 printf -v sshPubKey "%q" $(<../demo.id_rsa.pub tr -d '\n' | base64 -w0)
 if [ "x$namespace" == "x" ]
 then
