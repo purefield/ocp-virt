@@ -1,7 +1,7 @@
 namespace=$1
 lastNamespace=$(cat namespace.last)
 lastNamespace=${lastNamespace:-hybrid-virt}
-printf -v sshPubKey "%q" $(</srv/openshift/acm/id_rsa.pub tr -d '\n' | base64 -w0)
+printf -v sshPubKey "%q" $(<../demo.id_rsa.pub tr -d '\n' | base64 -w0)
 if [ "x$namespace" == "x" ]
 then
    read -p "What namespace name [$lastNamespace]? " namespace
@@ -15,7 +15,7 @@ source ../subscription.txt
 baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
 cat namespace.yaml.template | perl -pe "s/\{\{ namespace \}\}/$namespace/g" > $namespace.yaml
 echo "---" >> $namespace.yaml
-oc create secret generic id-rsa --from-file /srv/openshift/acm/id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
+oc create secret generic id-rsa --from-file ../demo.id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
 cat elasticsearch.install.yaml.template kibana.yaml.template coordinate.yaml.template ubi9.yaml.template | \
   perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
   perl -pe "s/\{\{ baseDomain \}\}/$baseDomain/g" | \
