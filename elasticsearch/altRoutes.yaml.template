@@ -2,7 +2,7 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: elasticsearch
+  name: elasticsearch-demo
   namespace: {{ namespace }}
 spec:
   host: elasticsearch.{{ altDomain }}
