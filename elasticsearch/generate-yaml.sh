@@ -12,7 +12,12 @@ then
 fi
 echo "$namespace" > namespace.last
 source ../subscription.txt
-baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
+if [ -z "$GUID" ]
+then
+   baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
+else
+   baseDomain="apps.$GUID.dynamic.opentlc.com"
+fi
 cat namespace.yaml.template | perl -pe "s/\{\{ namespace \}\}/$namespace/g" > $namespace.yaml
 echo "---" >> $namespace.yaml
 oc create secret generic id-rsa --from-file ../demo.id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
