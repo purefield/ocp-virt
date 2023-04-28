@@ -9,10 +9,10 @@
   SSLProxyCipherSuite PROFILE=SYSTEM
   SSLCertificateFile /etc/letsencrypt/live/console-openshift-console.apps.{{ guid }}.dynamic.opentlc.com/fullchain.pem
   SSLCertificateKeyFile /etc/letsencrypt/live/console-openshift-console.apps.{{ guid }}.dynamic.opentlc.com/privkey.pem
-  RequestHeader set Host "{{ name }}.apps.ocp.example.com"
-  RequestHeader set Referer "https://{{ name }}.apps.ocp.example.com"
-  RequestHeader set Origin "https://{{ name }}.apps.ocp.example.com"
-  ProxyPreserveHost Off
+  #RequestHeader set Host "{{ name }}.apps.ocp.example.com"
+  #RequestHeader set Referer "https://{{ name }}.apps.ocp.example.com"
+  #RequestHeader set Origin "https://{{ name }}.apps.ocp.example.com"
+  #ProxyPreserveHost Off
   SSLProxyEngine on
   SSLProxyVerify none
   SSLProxyCheckPeerCN off
@@ -23,6 +23,6 @@
   ProxyRequests off
 
   AddOutputFilterByType SUBSTITUTE text/html
-  Substitute "s|apps.ocp.example.com|apps.{{ guid }}.dynamic.opentlc.com|i"
+  #Substitute "s|apps.ocp.example.com|apps.{{ guid }}.dynamic.opentlc.com|i"
 </VirtualHost>
 
