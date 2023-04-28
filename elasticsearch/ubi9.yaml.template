@@ -7,8 +7,9 @@ metadata:
 data:
   install.sh: |-
     mkdir /root/.ssh/
+    cp /mnt/demo.id_rsa /root/.ssh/id_rsa
     chmod 700 /root/.ssh/
-    ln -s /mnt/demo.id_rsa /root/.ssh/id_rsa
+    chmod 0400 /root/.ssh/id_rsa
     yum install -y openssh-clients rsync
     /bin/sh
 immutable: false
@@ -32,7 +33,6 @@ spec:
       name: ubi9-install
     - secret:
         secretName: id-rsa
-      defaultMode: 0400
       name: id-rsa
   containers:
     - name: ubi9
