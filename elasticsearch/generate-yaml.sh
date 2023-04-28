@@ -13,6 +13,11 @@ fi
 echo "$namespace" > namespace.last
 source ../subscription.txt
 baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
+if [ -n "$GUID" ]
+then
+  altDomain=$baseDomain
+  baseDomain="apps.$GUID.dynamic.opentlc.com"
+fi
 cat namespace.yaml.template | perl -pe "s/\{\{ namespace \}\}/$namespace/g" > $namespace.yaml
 echo "---" >> $namespace.yaml
 oc create secret generic id-rsa --from-file ../demo.id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
@@ -31,13 +36,5 @@ for name in es-master00 es-master01 es-master02; do
       perl -MMIME::Base64 -pe "s/\{\{ sshPubKey \}\}/decode_base64('$sshPubKey')/ge" \
   >> $namespace.yaml
 done
-if [ -n "$GUID" ]
-then
-  altDomain="apps.$GUID.dynamic.opentlc.com"
-  cat altRoutes.yaml.template | \
-      perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
-      perl -pe "s/\{\{ altDomain \}\}/$altDomain/g"\
-  >> $namespace.yaml
-fi
 echo "# Apply yaml using:"
 echo "oc apply -f $namespace.yaml"
