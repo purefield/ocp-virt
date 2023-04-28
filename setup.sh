@@ -1,4 +1,4 @@
-sudo dnf install -y git
+sudo dnf install -y git python3-certbot-apache
 git clone https://github.com/purefield/opc-virt.git ~/demo
 ssh-keygen -N ""  -f ~/demo/demo.id_rsa
 echo "export subscriptionOrg=???
