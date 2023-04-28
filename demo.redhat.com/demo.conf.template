@@ -5,7 +5,6 @@
   ServerAlias es-master02.apps.{{ guid }}.dynamic.opentlc.com
   ServerAlias coordinate.apps.{{ guid }}.dynamic.opentlc.com
   ServerAlias elasticsearch.apps.{{ guid }}.dynamic.opentlc.com
-  ServerAlias {{ name }}.apps.{{ guid }}.dynamic.opentlc.com
   ErrorLog logs/ssl_error_log
   TransferLog logs/ssl_access_log
   LogLevel warn
@@ -13,13 +12,18 @@
   SSLHonorCipherOrder on
   SSLCipherSuite PROFILE=SYSTEM
   SSLProxyCipherSuite PROFILE=SYSTEM
-  SSLCertificateFile    /etc/letsencrypt/live/console-openshift-console.apps.{{ guid }}.dynamic.opentlc.com/fullchain.pem
-  SSLCertificateKeyFile /etc/letsencrypt/live/console-openshift-console.apps.{{ guid }}.dynamic.opentlc.com/privkey.pem
+  SSLCertificateFile    /etc/letsencrypt/live/elasticsearch.apps.{{ guid }}.dynamic.opentlc.com/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/elasticsearch.apps.{{ guid }}.dynamic.opentlc.com/privkey.pem
   SSLProxyEngine on
   SSLProxyVerify none
   SSLProxyCheckPeerCN off
   SSLProxyCheckPeerName off
   
+  RewriteEngine on
+  RewriteCond ${HTTP:Upgrade} websocket [NC]
+  RewriteCond ${HTTP:Connection} upgrade [NC]
+  RewriteRule .* "wss://ingress.apps.ocp.example.com$1" [P,L]
+
   ProxyPreserveHost On
   ProxyPass        "/" "https://ingress.apps.ocp.example.com/"
   ProxyPassReverse "/" "https://ingress.apps.ocp.example.com/"
