@@ -28,7 +28,5 @@
   ProxyPass        "/" "https://ingress.apps.ocp.example.com/"
   ProxyPassReverse "/" "https://ingress.apps.ocp.example.com/"
   ProxyRequests off
-
-  AddOutputFilterByType SUBSTITUTE text/html
 </VirtualHost>
 
