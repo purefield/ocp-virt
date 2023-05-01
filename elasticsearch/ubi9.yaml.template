@@ -7,7 +7,9 @@ metadata:
 data:
   install.sh: |-
     mkdir /root/.ssh/
+    cp /mnt/demo.id_rsa /root/.ssh/id_rsa
     chmod 700 /root/.ssh/
+    chmod 0400 /root/.ssh/id_rsa
     yum install -y openssh-clients rsync
     /bin/sh
 immutable: false
@@ -46,5 +48,4 @@ spec:
           subPath: install.sh
         - name: id-rsa
           readOnly: true
-          mountPath: /root/.ssh/id_rsa
-          subPath: id-rsa
+          mountPath: /mnt/

@@ -39,21 +39,21 @@ spec:
         app: elasticsearch
         elasticsearch: coordinate
     spec:
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
+      # securityContext:
+      #   seccompProfile:
+      #     type: RuntimeDefault
       containers:
         - name: coordinate
           image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0-amd64
           ports:
             - containerPort: 9200
             - containerPort: 9300
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            capabilities:
-              drop:
-                - ALL
+          # securityContext:
+          #   allowPrivilegeEscalation: false
+          #   runAsNonRoot: true
+          #   capabilities:
+          #     drop:
+          #       - ALL
           env:
           - name: ES_JAVA_OPTS
             value: -Xms4g -Xmx4g
@@ -83,6 +83,8 @@ kind: Route
 metadata:
   name: coordinate
   namespace: {{ namespace }}
+  annotations:
+    cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
 spec:
   host: coordinate.{{ baseDomain }}
   to:
