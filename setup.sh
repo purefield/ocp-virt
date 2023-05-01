@@ -1,4 +1,4 @@
-sudo dnf install -y git python3-certbot-apache nginx
+sudo dnf install -y git python3-certbot-apache
 git clone https://github.com/purefield/opc-virt.git ~/demo
 ssh-keygen -N ""  -f ~/demo/demo.id_rsa
 echo "export subscriptionOrg=???
@@ -14,6 +14,9 @@ sudo letsencrypt certonly --apache --agree-tos --email email@example.com \
   -d es-master01.apps.$GUID.dynamic.opentlc.com \
   -d es-master02.apps.$GUID.dynamic.opentlc.com
  
+sudo cp ~/demo/demo.redhat.com/nginx.repo /etc/yum.repos.d/nginx.repo
+sudo yum-config-manager --enable nginx-mainline
+sudo yum install -y nginx
 cat ~/demo/demo.redhat.com/nginx.conf.template | \
   perl -pe "s/\{\{ guid \}\}/$GUID/g" | \
   perl -pe "s/\{\{ bastion \}\}/127.0.01/g" | \
