@@ -18,5 +18,5 @@ cat ~/demo/demo.redhat.com/nginx.conf.template | \
   perl -pe "s/\{\{ guid \}\}/$GUID/g" | \
   perl -pe "s/\{\{ bastion \}\}/127.0.01/g" | \
   perl -pe "s/\{\{ cluster \}\}/$(dig dns.apps.ocp.example.com +short)/g" | \
-  sudo tee /etc/nginx/conf.d/demo.conf > /dev/null
+  sudo tee /etc/nginx/nginx.conf > /dev/null
 sudo systemctl enable nginx --now
