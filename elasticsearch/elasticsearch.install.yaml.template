@@ -38,6 +38,9 @@ data:
     ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
     systemctl enable elasticsearch --now
   system.sh: |-
+    cert=$(ls -1 /dev/disk/by-id/scsi-SATA*00cert)
+    mount $cert /etc/cockpit/ws-certs.d/
+    echo "$cert /etc/cockpit/ws-certs/ xfs defaults 0 0" >> /etc/fstab
     systemctl enable cockpit.socket --now
 immutable: false
 ---
