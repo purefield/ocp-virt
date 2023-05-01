@@ -195,6 +195,6 @@ spec:
   port:
     targetPort: cockpit
   tls:
-    termination: edge
+    termination: passthrough
     insecureEdgeTerminationPolicy: Redirect
   wildcardPolicy: None
