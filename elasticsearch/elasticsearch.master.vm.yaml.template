@@ -137,6 +137,10 @@ spec:
               name: install-scripts
               serial: 0000sh
             - disk:
+                bus: sata
+              name: letsencrypt
+              serial: 00cert
+            - disk:
                 bus: virtio
               name: data
           interfaces:
@@ -179,14 +183,15 @@ spec:
         - configMap:
             name: install-scripts
           name: install-scripts
+        - secret:
+            secretName: letsencrypt
+          name: letsencrypt
 ---
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: {{ name }}
   namespace: {{ namespace }}
-  annotations:
-    cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
 spec:
   host: {{ name }}.{{ baseDomain }}
   to:
