@@ -3,6 +3,8 @@ Openshift Virtualization Demo running Elasticsearch on mixed nodes (vm and conta
 ![Elasticsearch Cluster Overview](hybrid-virt-elasticsearch.png)
 
 ### Dependencies:
+OpenShift Virtualization Operator
+Cert Util Operator
 * OpenShift virtualization cluster with ODF (default storage class set and profile applied)
 * ```./demo.id_rsa``` - private key for vm access
 * ```./demo.id_rsa.pub``` - public key for vm access

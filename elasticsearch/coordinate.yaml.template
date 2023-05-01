@@ -83,6 +83,8 @@ kind: Route
 metadata:
   name: coordinate
   namespace: {{ namespace }}
+  annotations:
+    cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
 spec:
   host: coordinate.{{ baseDomain }}
   to:
