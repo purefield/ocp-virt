@@ -1,0 +1,34 @@
+load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
+error_log /dev/stdout info;
+events {}
+stream {
+    log_format upstream_time '$remote_addr $status';
+    access_log /dev/stdout upstream_time;
+
+    upstream apache {
+	server {{ bastion }}:444;
+    }
+    upstream ocp {
+	server {{ cluster }}:443;
+    }
+
+    map $ssl_preread_server_name $targetBackend {
+      kibana.apps.{{ guid }}.dynamic.opentlc.com                    ocp; 
+      es-master00.apps.{{ guid }}.dynamic.opentlc.com               ocp; 
+      es-master01.apps.{{ guid }}.dynamic.opentlc.com               ocp;
+      es-master02.apps.{{ guid }}.dynamic.opentlc.com               ocp;
+      coordinate.apps.{{ guid }}.dynamic.opentlc.com                ocp;
+      elasticsearch.apps.{{ guid }}.dynamic.opentlc.com             ocp;
+      console-openshift-console.apps.{{ guid }}.dynamic.opentlc.com apache;
+      oauth-openshift.apps.{{ guid }}.dynamic.opentlc.com           apache;
+      default 0;
+    }  
+
+    server {
+        listen 443;
+        proxy_pass $targetBackend;
+        proxy_timeout 3s;
+        proxy_connect_timeout 1s;
+        ssl_preread on;
+    }
+}
