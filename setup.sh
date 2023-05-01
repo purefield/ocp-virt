@@ -22,7 +22,7 @@ sudo letsencrypt certonly --apache --agree-tos --email email@example.com \
   -d es-master00.apps.$GUID.dynamic.opentlc.com \
   -d es-master01.apps.$GUID.dynamic.opentlc.com \
   -d es-master02.apps.$GUID.dynamic.opentlc.com
-sudo cp /etc/letsencrypt/live/elasticsearch.apps.$GUID.dynamic.opentlc.com/{cert,chain,privkey}.pem ~/demo/demo.redhat.com/
+sudo cp /etc/letsencrypt/live/elasticsearch.apps.$GUID.dynamic.opentlc.com/{cert,fullchain,chain,privkey}.pem ~/demo/demo.redhat.com/
 sudo chown $GUID-user ~/demo/demo.redhat.com/ -R
 
 sudo cp ~/demo/demo.redhat.com/nginx.repo /etc/yum.repos.d/nginx.repo
