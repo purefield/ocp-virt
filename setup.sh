@@ -4,7 +4,7 @@ ssh-keygen -N ""  -f ~/demo/demo.id_rsa
 echo "export subscriptionOrg=???
 export subscriptionKey=???" > ~/demo/subscription.txt
 perl -pe "s/\{\{ guid \}\}/$GUID/g" ~/demo/demo.redhat.com/letsencrypt.conf.template | sudo tee /etc/httpd/conf.d/letsencrypt.conf > /dev/null
-sudo perl -pe "s/443/444/" -i /etc/httpd/conf.d/ssl.conf
+sudo perl -pe "s/443/8443/" -i /etc/httpd/conf.d/ssl.conf
 sudo systemctl reload httpd
 sudo letsencrypt certonly --apache --agree-tos --email email@example.com \
   -d elasticsearch.apps.$GUID.dynamic.opentlc.com \

@@ -10,7 +10,7 @@ stream {
     access_log /dev/stdout upstream_time;
 
     upstream apache {
-	server {{ bastion }}:444;
+	server {{ bastion }}:8443;
     }
     upstream ocp {
 	server {{ cluster }}:443;
