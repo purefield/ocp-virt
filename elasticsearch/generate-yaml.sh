@@ -21,6 +21,7 @@ then
     --cert=~/demo/demo.redhat.com/cert.pem \
     --key=~/demo/demo.redhat.com/privkey.pem \
   -n $namespace --dry-run=client -o yaml >> $namespace.yaml
+  echo "---" >> $namespace.yaml
 fi
 cat namespace.yaml.template | perl -pe "s/\{\{ namespace \}\}/$namespace/g" > $namespace.yaml
 echo "---" >> $namespace.yaml
