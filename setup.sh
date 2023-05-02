@@ -34,3 +34,7 @@ cat ~/demo/demo.redhat.com/nginx.conf.template | \
   perl -pe "s/\{\{ cluster \}\}/$(dig dns.apps.ocp.example.com +short)/g" | \
   sudo tee /etc/nginx/nginx.conf > /dev/null
 sudo systemctl enable nginx --now
+
+mkdir ~/.kube/
+sudo cp /home/lab-user/install/auth/kubeconfig ~/.kube/config
+sudo chown $GUID-user: ~/.kube/config
