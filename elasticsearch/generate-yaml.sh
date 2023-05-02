@@ -24,8 +24,11 @@ then
     --cert=$HOME/demo/demo.redhat.com/fullchain.pem \
     --key=$HOME/demo/demo.redhat.com/privkey.pem \
   -n $namespace --dry-run=client -o yaml >> $namespace.yaml
-  echo "---" >> $namespace.yaml
+else
+  oc create secret generic letsencrypt \
+  -n $namespace --dry-run=client -o yaml >> $namespace.yaml
 fi
+echo "---" >> $namespace.yaml
 oc create secret generic id-rsa --from-file ../demo.id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
 cat elasticsearch.install.yaml.template kibana.yaml.template coordinate.yaml.template ubi9.yaml.template | \
   perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
