@@ -20,6 +20,7 @@ cd ~/demo/
 
 ### Demo
 Log into OpenShift Cluster
+
 Run the demo script to create a fresh elasticsearch cluster in a new namespace (first argument or prompt, defaults to last namespace used or ```next-gen-virt```)
 ```sh
 cd elasticsearch/
