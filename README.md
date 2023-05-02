@@ -3,12 +3,12 @@ Openshift Virtualization Demo running Elasticsearch on mixed nodes (vm and conta
 ![Elasticsearch Cluster Overview](hybrid-virt-elasticsearch.png)
 
 ### Dependencies:
-OpenShift Virtualization Operator
-Cert Util Operator
-* OpenShift virtualization cluster with ODF (default storage class set and profile applied)
+* OpenShift Baremetal cluster with ODF (default storage class set and profile applied)
+* OpenShift Virtualization Operator
+* Cert Util Operator
 * RHEL Subscription information for 
-** Subscription Org
-** Subscription Key
+  * Subscription Org
+  * Subscription Key
 
 ### Setup
 ```sh
