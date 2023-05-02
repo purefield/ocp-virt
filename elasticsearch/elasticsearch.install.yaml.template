@@ -67,6 +67,9 @@ metadata:
   namespace: {{ namespace }}
   annotations:
     cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
+  labels:
+    app: elasticsearch
+    role: api
 spec:
   host: elasticsearch.{{ baseDomain }}
   to:
