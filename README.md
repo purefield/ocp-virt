@@ -24,4 +24,5 @@ Run the demo script to create a fresh elasticsearch cluster in a new namespace (
 ```sh
 cd elasticsearch/
 ./generate-yaml.sh next-gen-virt
+oc apply -f next-gen-virt.yaml
 ```
