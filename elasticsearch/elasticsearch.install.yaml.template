@@ -40,7 +40,8 @@ data:
   system.sh: |-
     cert=$(ls -1 /dev/disk/by-id/scsi-SATA*00cert)
     mount $cert /etc/cockpit/ws-certs.d/
-    echo "$cert /etc/cockpit/ws-certs.d/ xfs defaults 0 0" >> /etc/fstab
+    if [ -f "/etc/cockpit/ws-certs.d/tls.crt" ]; then echo "$cert /etc/cockpit/ws-certs.d/ xfs defaults 0 0" >> /etc/fstab;
+    else umount $cert; fi
     systemctl enable cockpit.socket --now
 immutable: false
 ---
