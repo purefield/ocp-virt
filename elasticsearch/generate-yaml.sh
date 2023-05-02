@@ -47,3 +47,4 @@ for name in es-master00 es-master01 es-master02; do
 done
 echo "# Apply yaml using:"
 echo "oc apply -f $namespace.yaml"
+echo "watch --color ./demo.sh"

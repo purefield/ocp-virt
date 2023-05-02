@@ -6,9 +6,9 @@ echo
 echo "$cmd"
 echo
 out=$($cmd 2>&1)
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 && "x$(echo "$out" | grep es-master)" != "x" ]]; then
   if [ "x$(echo "$out" | grep coordinate)" == "x" ]; then
-    echo -e "[ $ERROR] VM cluster is up. Waiting on container" 
+    echo -e "[ $ERROR ] VM cluster is up. Waiting on container" 
     echo "$out" 
   else
     echo -e "[ $OK    ] Coordinate container is part of the VM cluster:" 
