@@ -1,7 +1,7 @@
 export OK='\033[0;32mOK\033[0m'
 export ERROR='\033[0;31mERROR\033[0m'
-baseDomain=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
-cmd="curl -sk https://elasticsearch.$baseDomain/_cat/nodes"
+host=$(oc get route -l app=elasticsearch -l role=api -A -o jsonpath='{.items[].status.ingress[].host}')
+cmd="curl -sk https://$host/_cat/nodes"
 echo
 echo "$cmd"
 echo
