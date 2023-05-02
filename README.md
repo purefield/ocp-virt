@@ -27,6 +27,11 @@ cd elasticsearch/
 ./generate-yaml.sh next-gen-virt
 oc apply -f next-gen-virt.yaml
 ```
+Once the VMs are running
+```
+watch --color ./demo.sh
+```
+
 #### Areas to demo
 * Operators -> OperatorHub
   * OpenShift Virtualization Operator (installed)
