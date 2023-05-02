@@ -1,4 +1,5 @@
 namespace=$1
+touch namespace.last
 lastNamespace=$(cat namespace.last)
 lastNamespace=${lastNamespace:-next-gen-virt}
 printf -v sshPubKey "%q" $(<../demo.id_rsa.pub tr -d '\n' | base64 -w0)
