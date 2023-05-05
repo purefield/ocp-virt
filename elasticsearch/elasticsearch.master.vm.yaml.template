@@ -124,25 +124,25 @@ spec:
               disk:
                 bus: virtio
               name: rootdisk
-            - bootOrder: 2
-              disk:
+            - disk:
                 bus: virtio
               name: cloudinitdisk
             - disk:
-                bus: sata
+                bus: virtio
               name: elasticsearch-yaml
               serial: 00yaml
             - disk:
-                bus: sata
+                bus: virtio
               name: install-scripts
               serial: 0000sh
             - disk:
-                bus: sata
+                bus: virtio
               name: letsencrypt
               serial: 00cert
             - disk:
                 bus: virtio
               name: data
+              serial: datadisk
           interfaces:
             - masquerade: {}
               model: virtio
@@ -167,7 +167,7 @@ spec:
               #cloud-config
               hostname: {{ name }}
               runcmd: 
-                - mount /dev/disk/by-id/scsi-SATA*0000sh /mnt/
+                - mount /dev/disk/by-id/virtio-0000sh /mnt/
                 - bash /mnt/system.sh
                 - bash /mnt/elasticsearch.sh
                 - umount /mnt
