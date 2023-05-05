@@ -26,19 +26,19 @@ data:
     mkdir -p /srv/elasticsearch/config
     mkdir -p /srv/elasticsearch/data
     chown elasticsearch:elasticsearch /srv/elasticsearch -R
-    mkfs.xfs /dev/vdc
-    config=$(ls -1 /dev/disk/by-id/scsi-SATA*00yaml)
+    mkfs.xfs /dev/disk/by-id/virtio-datadisk
+    config=$(ls -1 /dev/disk/by-id/virtio-00yaml)
     mount $config /srv/elasticsearch/config
-    mount /dev/vdc /srv/elasticsearch/data
-    echo "$config /srv/elasticsearch/config xfs defaults 0 0" >> /etc/fstab
-    echo '/dev/vdc /srv/elasticsearch/data   xfs defaults 0 0' >> /etc/fstab
+    mount /dev/disk/by-id/virtio-datadisk /srv/elasticsearch/data
+    echo "$config /srv/elasticsearch/config iso9660 defaults 0 0" >> /etc/fstab
+    echo '/dev/disk/by-id/virtio-datadisk /srv/elasticsearch/data   xfs defaults 0 0' >> /etc/fstab
     mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.org
     mv /etc/elasticsearch/jvm.options       /etc/elasticsearch/jvm.options.org
     ln -sf /srv/elasticsearch/config/elasticsearch.conf /etc/elasticsearch/elasticsearch.yml
     ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
     systemctl enable elasticsearch --now
   system.sh: |-
-    cert=$(ls -1 /dev/disk/by-id/scsi-SATA*00cert)
+    cert=$(ls -1 /dev/disk/by-id/virtio-00cert)
     mount $cert /etc/cockpit/ws-certs.d/
     if [ -f "/etc/cockpit/ws-certs.d/tls.crt" ]; then echo "$cert /etc/cockpit/ws-certs.d/ xfs defaults 0 0" >> /etc/fstab;
     else umount $cert; fi
