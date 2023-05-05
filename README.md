@@ -72,7 +72,7 @@ Under Administrator Perspective:
 * Networking
    * Routes
      * Select es-master00 Cockpit route
-       * Log-in using elasticsearch:redhat 
+       * Log-in using ```elasticsearch```:```redhat```
          * View services and search for elasticsearch (will appear when ready)
      * Select elasticsearch route
        * Verify ```cluster_uuid``` is populated
