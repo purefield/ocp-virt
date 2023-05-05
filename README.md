@@ -4,6 +4,7 @@ Openshift Virtualization Demo running Elasticsearch on Mixed Pods (VMs and Conta
 
 ### Dependencies:
 * OpenShift Baremetal cluster with ODF
+  * for instance: demo.redhat.com - Hands on with Openshift Virtualization
   * ODF is default storage class set and profile applied
 * Installed Operators
   * OpenShift Virtualization Operator
