@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log Streamer</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Log event listener
+    socket.on('log', (data) => {
+      const logElement = document.createElement('div');
+      logElement.textContent = data;
+      document.getElementById('logs').appendChild(logElement);
+    });
+  </script>
+</head>
+<body>
+  <h1>Log Streamer</h1>
+  <div id="logs"></div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+FROM registry.access.redhat.com/ubi8/nodejs-14
+USER root
+WORKDIR /app
+COPY package.json .
+RUN npm install
+USER default
+ENV ES_HOST=elasticsearch:443 \
+    ES_INDEX=generated \
+    DATA_SIZE=1024 \
+    DATE_RATE=10
+COPY generate-data.js .
+COPY public public
+EXPOSE 3000
+ENTRYPOINT /usr/bin/node generate-data.js
+
