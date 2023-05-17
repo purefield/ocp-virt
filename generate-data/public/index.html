@@ -6,17 +6,40 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-
     // Log event listener
-    socket.on('log', (data) => {
-      const logElement = document.createElement('div');
-      logElement.textContent = data;
-      document.getElementById('logs').appendChild(logElement);
+    socket.on('data', (data) => {
+      const bytesElement = document.getElementById('bytes');
+      bytesElement.textContent = data.bytes;
+      if (data.log){
+         const logElement    = document.createElement('div');
+	 const logsArea      = document.getElementById('logs');
+         logElement.textContent = data.log;
+         while (logsArea.childElementCount > 10) {
+           logsArea.removeChild(logsArea.lastChild);
+         }
+         logsArea.prepend(logElement);
+      }
     });
+    function updateValues() {
+      const sizeInput = document.getElementById('sizeInput').value;
+      const rateInput = document.getElementById('rateInput').value;
+      const batchInput = document.getElementById('batchInput').value;
+      const showLogs = document.getElementById('showLogs').checked;
+      var data = { size: sizeInput, rate: rateInput, batch: batchInput, logs: showLogs };
+      socket.emit('updateValues', data);
+    }
   </script>
 </head>
 <body>
-  <h1>Log Streamer</h1>
-  <div id="logs"></div>
+  <h1>Log Streamer <span id="bytes"></span></h1>
+  <div>
+    <input type="number"   id="sizeInput"  placeholder="Enter size"  onChange="updateValues()">
+    <input type="number"   id="rateInput"  placeholder="Enter rate"  onChange="updateValues()">
+    <input type="number"   id="batchInput" placeholder="Enter batch" onChange="updateValues()">
+    <label for="showLogs">Show Logs</label>
+    <input type="checkbox" id="showLogs"   name="showLogs" checked="checked" onChange="updateValues()"/>
+    <button onclick="updateValues()">Update</button>
+  </div>
+  <div style="overflow:scroll;max-height:100%" id="logs"></div>
 </body>
 </html>
