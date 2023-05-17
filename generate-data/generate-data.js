@@ -16,7 +16,7 @@ const lorem = new LoremIpsum({
   wordsPerSentence: { max: 16, min: 4 }
 });
 
-var size  = process.env.DATA_SIZE  || 1;
+var size  = process.env.DATA_SIZE  || 5;
 var rate  = process.env.DATA_RATE  || 10;
 var batch = process.env.DATA_BATCH || 100; // Number of inserts per batch
 var logs  = true;
