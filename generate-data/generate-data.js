@@ -16,7 +16,6 @@ const lorem = new LoremIpsum({
   wordsPerSentence: { max: 16, min: 4 }
 });
 
-
 var size  = process.env.DATA_SIZE  || 1;
 var rate  = process.env.DATA_RATE  || 10;
 var batch = process.env.DATA_BATCH || 100; // Number of inserts per batch
@@ -24,6 +23,8 @@ var logs  = true;
 var start = new Date().getTime();
 var totalBytes = 0;
 var intervalId;
+var emitted = start;
+var randomDoc = {};
 
 // Serve static files
 app.use(express.static('public'));
@@ -77,15 +78,18 @@ function updateInterval(){
 
 // Generate a random document
 function generateRandomDocument() {
-  var data = {
-    timestamp: new Date(),
-    message: lorem.generateSentences(size),
-    data: lorem.generateParagraphs(size),
-    bytes: 0
-  };
-  var bytes = v8.serialize(data).length;
-  data.bytes= bytes % 10 + bytes;
-  return data;
+  if (!randomDoc) {
+    var data = {
+      timestamp: new Date(),
+      message: lorem.generateSentences(size),
+      data: lorem.generateParagraphs(size),
+      bytes: 0
+    };
+    var bytes = v8.serialize(data).length;
+    data.bytes= bytes % 10 + bytes;
+    randomDoc = data;
+  }
+  return randomDoc;
 }
 
 // Insert batch of documents into Elasticsearch
@@ -111,7 +115,11 @@ async function insertBatch() {
         console.log(msg);
 	data.log = msg; 
       }
-      io.emit('data', data);
+      var now = new Date().getTime();
+      if (now - emitted > 100){
+       io.emit('data', data);
+       emitted = now;
+      }
     }
   } catch (error) {
     console.error('Error inserting documents:', error);
