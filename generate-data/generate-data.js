@@ -89,7 +89,7 @@ function generateRandomDocument() {
     bytes: 0
   };
   var bytes = v8.serialize(data).length;
-  data.bytes= bytes.length + bytes;
+  data.bytes= bytes % 10 + bytes;
   return data;
 }
 
