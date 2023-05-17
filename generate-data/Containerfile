@@ -13,4 +13,6 @@ COPY generate-data.js .
 COPY public public
 EXPOSE 3000
 ENTRYPOINT /usr/bin/node generate-data.js
+  
+
 

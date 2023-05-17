@@ -1,7 +1,6 @@
 const elasticsearch = require('@elastic/elasticsearch');
 const express = require('express');
 const socketIO = require('socket.io');
-const morgan = require('morgan');
 const LoremIpsum = require('lorem-ipsum').LoremIpsum;
 const v8 = require('v8');
 
@@ -26,9 +25,6 @@ var start = new Date().getTime();
 var totalBytes = 0;
 var intervalId;
 
-// Middleware to log HTTP requests
-app.use(morgan('dev'));
-
 // Serve static files
 app.use(express.static('public'));
 
@@ -41,17 +37,13 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('A user connected.');
 
-  // Log message event
-  socket.on('log', (data) => {
-    console.log(data); // Log the data received from the client
-    io.emit('log', data); // Broadcast the log to all connected clients
-  });
   socket.on('updateValues', (data) => {
+    var rateChange = data.rate != rate;
     size  = data.size  ? data.size * 1 : size;
     rate  = data.rate  ? data.rate     : rate;
     batch = data.batch ? data.batch    : batch;
     logs  = data.logs && true;
-    updateInterval();
+    if (rateChange) updateInterval();
   });
 
   // Disconnect event
@@ -75,10 +67,12 @@ const client = new elasticsearch.Client({
 
 // Update interval
 function updateInterval(){
-  var intervalMs = Math.round(1000 / rate);
   if (intervalId)
     clearInterval(intervalId);
-  intervalId = setInterval(insertBatch, intervalMs);
+  if (rate > 0) {
+    var intervalMs = Math.round(1000 / rate);
+    intervalId = setInterval(insertBatch, intervalMs);
+  }
 }
 
 // Generate a random document
@@ -87,8 +81,7 @@ function generateRandomDocument() {
     timestamp: new Date(),
     message: lorem.generateSentences(size),
     data: lorem.generateParagraphs(size),
-    bytes: 0,
-    ram: process.memoryUsage()
+    bytes: 0
   };
   var bytes = v8.serialize(data).length;
   data.bytes= bytes % 10 + bytes;
@@ -126,7 +119,8 @@ async function insertBatch() {
 }
 
 function humanBytes(size) {
-    var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
-    return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+  var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+  return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }
+
 updateInterval();
