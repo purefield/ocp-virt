@@ -12,11 +12,17 @@ const port  = process.env.UI_PORT   || 3000;
 const app = express();
 const server = require('http').Server(app);
 const io = socketIO(server);
+const lorem = new LoremIpsum({
+  sentencesPerParagraph: { max: 8, min: 4 },
+  wordsPerSentence: { max: 16, min: 4 }
+});
+
 
 var size  = process.env.DATA_SIZE  || 1;
 var rate  = process.env.DATA_RATE  || 10;
 var batch = process.env.DATA_BATCH || 100; // Number of inserts per batch
 var logs  = true;
+var start = new Date().getTime();
 var totalBytes = 0;
 var intervalId;
 
@@ -77,16 +83,12 @@ function updateInterval(){
 
 // Generate a random document
 function generateRandomDocument() {
-  const lorem = new LoremIpsum({
-    sentencesPerParagraph: { max: 8, min: 4 },
-    wordsPerSentence: { max: 16, min: 4 }
-  });
-
   var data = {
     timestamp: new Date(),
     message: lorem.generateSentences(size),
     data: lorem.generateParagraphs(size),
-    bytes: 0
+    bytes: 0,
+    ram: process.memoryUsage()
   };
   var bytes = v8.serialize(data).length;
   data.bytes= bytes % 10 + bytes;
@@ -105,10 +107,13 @@ async function insertBatch() {
       console.error('Error inserting documents:', errorItems);
     } else {
       var bytes = v8.serialize(body).length;
+      var duration = new Date().getTime() - start;
       totalBytes += bytes;
       bytes = humanBytes(bytes);
       var msg = `Inserted ${batch} documents ${bytes} into ${index} on ${host} (s:${size} r:${rate})`
-      var data = { bytes: humanBytes(totalBytes)};
+      var data = { 
+        bytes: humanBytes(totalBytes),
+        rate: humanBytes(parseInt(totalBytes/(duration/1000/60)))      };
       if (logs) {
         console.log(msg);
 	data.log = msg; 

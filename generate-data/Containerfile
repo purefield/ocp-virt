@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json .
 RUN npm install
 USER default
-ENV ES_HOST=elasticsearch:443 \
+ENV ES_NODE=elasticsearch:443 \
     ES_INDEX=generated \
     DATA_SIZE=5 \
     DATE_RATE=10 \

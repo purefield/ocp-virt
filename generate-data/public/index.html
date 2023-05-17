@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Log Streamer</title>
+  <style>
+    body { font-family: sans-serif; }
+    label { display: inline-block; width: 100px; }
+    input { width: 40px; }
+  </style>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
@@ -10,6 +15,8 @@
     socket.on('data', (data) => {
       const bytesElement = document.getElementById('bytes');
       bytesElement.textContent = data.bytes;
+      const rateElement = document.getElementById('rate');
+      rateElement.textContent = data.rate;
       if (data.log){
          const logElement    = document.createElement('div');
 	 const logsArea      = document.getElementById('logs');
@@ -31,14 +38,32 @@
   </script>
 </head>
 <body>
-  <h1>Log Streamer <span id="bytes"></span></h1>
+  <h1>
+      Data Generator 
+      <span id="bytes"></span> total 
+      <span id="rate"></span>/min
+  </h1>
   <div>
-    <input type="number"   id="sizeInput"  placeholder="Enter size"  onChange="updateValues()">
-    <input type="number"   id="rateInput"  placeholder="Enter rate"  onChange="updateValues()">
-    <input type="number"   id="batchInput" placeholder="Enter batch" onChange="updateValues()">
-    <label for="showLogs">Show Logs</label>
-    <input type="checkbox" id="showLogs"   name="showLogs" checked="checked" onChange="updateValues()"/>
+    <div>
+      <label for="sizeInput">Phrases</label>
+      <input type="number"   id="sizeInput"  placeholder="Enter size"  onChange="updateValues()">
+      <span class="unit">paragraphs/document</span>
+    </div>
+    <div>
+      <label for="batchInput">Batch Size</label>
+      <input type="number"   id="batchInput" placeholder="Enter batch" onChange="updateValues()">
+      <span class="unit">documents/batch</span>
+    </div>
+    <div>
+      <label for="rateInput">Insert Rate</label>
+      <input type="number"   id="rateInput"  placeholder="Enter rate"  onChange="updateValues()">
+      <span class="unit">batch/sec</span>
+    </div>
+    <div>
+      <label for="showLogs">Show Logs</label>
+      <input type="checkbox" id="showLogs"   name="showLogs" checked="checked" onChange="updateValues()"/>
     <button onclick="updateValues()">Update</button>
+    </div>
   </div>
   <div style="overflow:scroll;max-height:100%" id="logs"></div>
 </body>
