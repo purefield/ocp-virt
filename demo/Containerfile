@@ -1,0 +1,15 @@
+FROM registry.access.redhat.com/ubi8/nodejs-14
+USER root
+WORKDIR /app
+COPY package.json .
+RUN npm install
+USER default
+ENV HOST=localhost \
+    PORT=8080 \
+    NAMESPACE=next-gen-virt
+COPY demo.js .
+EXPOSE 8080
+ENTRYPOINT /usr/bin/node demo.js
+  
+
+
