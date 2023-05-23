@@ -78,7 +78,7 @@ function updateInterval(){
 
 // Generate a random document
 function generateRandomDocument() {
-  if (!randomDoc) {
+  if (!randomDoc.data) {
     var data = {
       timestamp: new Date(),
       message: lorem.generateSentences(size),
