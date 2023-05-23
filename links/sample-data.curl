@@ -1,0 +1,6 @@
+curl -kXPUT -H "Content-Type: application/json" https://$host/_bulk -d'
+{ "index" : { "_index" : "links", "_id" : "1" } }
+{ "name" : "Red Hat", "desc": "Enterprise OpenSource Software", "url": "https://redhat.com" }
+{ "index" : { "_index" : "links", "_id" : "2" } }
+{ "name" : "OpenShift", "desc": "Enterprise Application Platform", "url": "https://openshift.com" }
+'
