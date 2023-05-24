@@ -74,12 +74,10 @@ public class LinksController {
 	private static class SelfSignedCertificateTrustManager implements X509TrustManager {
 		@Override
 		public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-			// Trust all client certificates
 		}
 
 		@Override
 		public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-			// Trust all server certificates
 		}
 
 		@Override
