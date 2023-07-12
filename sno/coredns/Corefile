@@ -1,0 +1,7 @@
+.:53 {
+    file /etc/coredns/sno.air.purefield.nl
+    forward . /etc/resolv.conf
+    log
+    errors
+    cache
+}

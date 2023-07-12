@@ -1,0 +1,18 @@
+<network>
+  <name>ocp</name>
+  <uuid>32ad23d0-8e50-4322-af8f-46a10a1dafc8</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:d5:7c:1f'/>
+  <domain name='ocp'/>
+  <dns>
+    <host ip='192.168.100.4'>
+       <hostname>proxy.sno.air.purefield.nl</hostname>
+    </host>
+  </dns>
+  <ip address='192.168.100.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.100.128' end='192.168.100.254'/>
+    </dhcp>
+  </ip>
+</network>
