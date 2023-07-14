@@ -8,7 +8,7 @@ Openshift Virtualization Demo running Elasticsearch on Mixed Pods (VMs and Conta
   * ODF is default storage class set and profile applied
 * Installed Operators
   * OpenShift Virtualization Operator
-  * Cert Util Operator
+  * Cert Utils Operator
 * RHEL Subscription information (for Pod software installation) 
   * Subscription Org
   * Subscription Key
