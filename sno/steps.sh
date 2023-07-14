@@ -16,7 +16,14 @@ oc get nodes
 # CoreDNS
 podman pull coredns/coredns
 /usr/bin/podman run --rm --name coredns --read-only -p 53:53/tcp -p 53:53/udp -v ./coredns:/etc/coredns:ro --cap-drop ALL --cap-add NET_BIND_SERVICE coredns/coredns -conf /etc/coredns/Corefile
+<<<<<<< Updated upstream
 podman generate systemd coredns
+=======
+podman generate systemd coredns > /etc/systemd/system/coredns.service
+systemctl daemon-reload
+systemctl enable coredns --now
+
+>>>>>>> Stashed changes
 
 # dnsmasq
 virsh net-list --all
