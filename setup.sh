@@ -29,6 +29,16 @@ mkdir ~/.kube/
 sudo cp /home/lab-user/install/auth/kubeconfig ~/.kube/config
 sudo chown $GUID-user: ~/.kube/config
 
+demoprefix=''
+if [ -n "$GUID" ]
+then
+  demoprefix='demo.redhat.com/'
+fi
+oc apply -f cert-utils-operator.yaml -f ${demoprefix}openshift-cnv.yaml
+sleep 30
+oc wait --for=jsonpath='{.status.phase}'=Succeeded csv -n openshift-cnv -l operators.coreos.com/kubevirt-hyperconverged.openshift-cnv
+oc apply -f hyperconverged.yaml
+
 if [ "x$subscriptionOrg" == "x" ]
 then
    read -p "What is your subscription org used to register RHEL? " subscriptionOrg
