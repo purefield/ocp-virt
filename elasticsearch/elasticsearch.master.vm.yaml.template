@@ -83,7 +83,6 @@ spec:
           resources:
             requests:
               storage: 80Gi
-          storageClassName: ocs-storagecluster-ceph-rbd
     - metadata:
         creationTimestamp: null
         name: {{ name }}
@@ -95,12 +94,9 @@ spec:
           name: rhel9
           namespace: openshift-virtualization-os-images
         storage:
-          accessModes:
-            - ReadWriteMany
           resources:
             requests:
               storage: 30Gi
-          storageClassName: ocs-storagecluster-ceph-rbd
           volumeMode: Block
   running: true
   template:
