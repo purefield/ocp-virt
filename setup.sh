@@ -1,17 +1,7 @@
 # sudo dnf install -y git
 # git clone https://github.com/purefield/opc-virt.git ~/demo
-if [ "x$subscriptionOrg" == "x" ]
-then
-   read -p "What is your subscription org used to register RHEL? " subscriptionOrg
-fi
-if [ "x$subscriptionKey" == "x" ]
-then
-   read -p "What is your subscription key? " subscriptionKey
-fi
 sudo dnf install -y python3-certbot-apache
 ssh-keygen -N ""  -f ~/demo/demo.id_rsa
-echo "export subscriptionOrg=$subscriptionOrg
-export subscriptionKey=$subscriptionKey" > ~/demo/subscription.txt
 perl -pe "s/\{\{ guid \}\}/$GUID/g" ~/demo/demo.redhat.com/letsencrypt.conf.template | sudo tee /etc/httpd/conf.d/letsencrypt.conf > /dev/null
 sudo perl -pe "s/443/8443/" -i /etc/httpd/conf.d/ssl.conf
 sudo systemctl reload httpd
@@ -38,3 +28,24 @@ sudo systemctl enable nginx --now
 mkdir ~/.kube/
 sudo cp /home/lab-user/install/auth/kubeconfig ~/.kube/config
 sudo chown $GUID-user: ~/.kube/config
+
+demoprefix=''
+if [ -n "$GUID" ]
+then
+  demoprefix='demo.redhat.com/'
+fi
+oc apply -f cert-utils-operator.yaml -f ${demoprefix}openshift-cnv.yaml
+sleep 30
+oc wait --for=jsonpath='{.status.phase}'=Succeeded csv -n openshift-cnv -l operators.coreos.com/kubevirt-hyperconverged.openshift-cnv
+oc apply -f hyperconverged.yaml
+
+if [ "x$subscriptionOrg" == "x" ]
+then
+   read -p "What is your subscription org used to register RHEL? " subscriptionOrg
+fi
+if [ "x$subscriptionKey" == "x" ]
+then
+   read -p "What is your subscription key? " subscriptionKey
+fi
+echo "export subscriptionOrg=$subscriptionOrg
+export subscriptionKey=$subscriptionKey" > ~/demo/subscription.txt
