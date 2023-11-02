@@ -9,7 +9,7 @@ Openshift Virtualization Demo running Elasticsearch on Mixed Pods (VMs and Conta
 * Installed Operators
   * OpenShift Virtualization Operator
   * Cert Utils Operator
-* RHEL Subscription information (for Pod software installation) 
+* RHEL Subscription ![Activation Keys](https://console.redhat.com/insights/connector/activation-keys) (for Pod software installation)
   * Subscription Org
   * Subscription Key
 
