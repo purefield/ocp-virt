@@ -144,8 +144,11 @@ spec:
               model: virtio
               name: default
         resources:
+          overcommitGuestOverhead: true
           requests:
             memory: 8Gi
+        memory:
+          guest: 16Gi
       evictionStrategy: LiveMigrate
       networks:
         - name: default
