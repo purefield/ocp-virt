@@ -29,6 +29,8 @@ mkdir ~/.kube/
 sudo cp /home/lab-user/install/auth/kubeconfig ~/.kube/config
 sudo chown $GUID-user: ~/.kube/config
 
+sudo yum install -y podman 
+
 demoprefix=''
 if [ -n "$GUID" ]
 then
