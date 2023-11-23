@@ -89,6 +89,7 @@ function generateRandomDocument() {
     data.bytes= bytes % 10 + bytes;
     randomDoc = data;
   }
+  randomDoc.timestamp = new Date();
   return randomDoc;
 }
 
