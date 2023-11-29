@@ -12,8 +12,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-    "start": "generate-data.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodejs generate-data.js"
   },
   "author": "",
   "license": "ISC"
