@@ -4,10 +4,11 @@ const socketIO = require('socket.io');
 const LoremIpsum = require('lorem-ipsum').LoremIpsum;
 const v8 = require('v8');
 
-const es_node = process.env.ES_NODE || 'coordinate';
-const es_port = process.env.ES_PORT || '443';
-const index = process.env.ES_INDEX  || 'generated';
-const port  = process.env.UI_PORT   || 3000;
+const es_node = process.env.ES_NODE  || 'coordinate';
+const es_port = process.env.ES_PORT  || '9200';
+const index   = process.env.ES_INDEX || 'generated';
+const port    = process.env.UI_PORT  || 3000;
+const secure = es_port == 443 ? 's' : '';
 
 const app = express();
 const server = require('http').Server(app);
@@ -61,7 +62,7 @@ server.listen(port, () => {
 
 // Elasticsearch configuration
 const client = new elasticsearch.Client({
-  node: `https://${es_node}:${es_port}`,
+  node: `http${secure}://${es_node}:${es_port}`,
   tls: {
     rejectUnauthorized: false
   }
