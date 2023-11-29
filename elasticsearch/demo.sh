@@ -1,3 +1,4 @@
+#!/bin/bash
 export OK='\033[0;32mOK\033[0m'
 export ERROR='\033[0;31mERROR\033[0m'
 host=$(oc get route -l app=elasticsearch -l role=api -A -o jsonpath='{.items[].status.ingress[].host}')
