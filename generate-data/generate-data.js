@@ -5,7 +5,7 @@ const LoremIpsum = require('lorem-ipsum').LoremIpsum;
 const v8 = require('v8');
 
 const es_node = process.env.ES_NODE || 'coordinate';
-const es_port = process.env.ES_PORT || '443';
+const es_port = process.env.ES_PORT || '9200';
 const index = process.env.ES_INDEX  || 'generated';
 const port  = process.env.UI_PORT   || 3000;
 
