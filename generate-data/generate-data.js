@@ -4,7 +4,8 @@ const socketIO = require('socket.io');
 const LoremIpsum = require('lorem-ipsum').LoremIpsum;
 const v8 = require('v8');
 
-const host  = process.env.ES_NODE   || 'elasticsearch:443';
+const es_node = process.env.ES_NODE || 'coordinate';
+const es_port = process.env.ES_PORT || '443';
 const index = process.env.ES_INDEX  || 'generated';
 const port  = process.env.UI_PORT   || 3000;
 
@@ -60,7 +61,7 @@ server.listen(port, () => {
 
 // Elasticsearch configuration
 const client = new elasticsearch.Client({
-  node: "https://" + host,
+  node: `https://${es_node}:${es_port}`,
   tls: {
     rejectUnauthorized: false
   }
@@ -108,7 +109,7 @@ async function insertBatch() {
       var duration = new Date().getTime() - start;
       totalBytes += bytes;
       bytes = humanBytes(bytes);
-      var msg = `Inserted ${batch} documents ${bytes} into ${index} on ${host} (s:${size} r:${rate})`
+      var msg = `Inserted ${batch} documents ${bytes} into ${index} on ${es_node}:${es_port} (s:${size} r:${rate})`
       var data = { 
         bytes: humanBytes(totalBytes),
         rate: humanBytes(parseInt(totalBytes/(duration/1000/60)))      };
