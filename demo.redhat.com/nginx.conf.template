@@ -17,6 +17,7 @@ stream {
 
     map $ssl_preread_server_name $targetBackend {
       kibana.apps.{{ guid }}.dynamic.opentlc.com                    ocp; 
+      data-generator.apps.{{ guid }}.dynamic.opentlc.com            ocp; 
       es-master00.apps.{{ guid }}.dynamic.opentlc.com               ocp; 
       es-master01.apps.{{ guid }}.dynamic.opentlc.com               ocp;
       es-master02.apps.{{ guid }}.dynamic.opentlc.com               ocp;

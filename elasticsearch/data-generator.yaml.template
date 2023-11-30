@@ -132,7 +132,7 @@ kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: data-generator
-  namespace: abc
+  namespace: {{ namespace }}
   labels: {}
 spec:
   host: data-generator.{{ baseDomain }}

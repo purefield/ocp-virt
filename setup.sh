@@ -9,6 +9,7 @@ sudo letsencrypt certonly --apache --agree-tos --email email@example.com \
   -d elasticsearch.apps.$GUID.dynamic.opentlc.com \
   -d coordinate.apps.$GUID.dynamic.opentlc.com \
   -d kibana.apps.$GUID.dynamic.opentlc.com \
+  -d data-generator.apps.$GUID.dynamic.opentlc.com \
   -d es-master00.apps.$GUID.dynamic.opentlc.com \
   -d es-master01.apps.$GUID.dynamic.opentlc.com \
   -d es-master02.apps.$GUID.dynamic.opentlc.com
