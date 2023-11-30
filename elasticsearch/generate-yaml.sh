@@ -30,7 +30,7 @@ else
 fi
 echo "---" >> $namespace.yaml
 oc create secret generic id-rsa --from-file ../demo.id_rsa -n $namespace --dry-run=client -o yaml >> $namespace.yaml
-cat elasticsearch.install.yaml.template kibana.yaml.template coordinate.yaml.template ubi9.yaml.template | \
+cat elasticsearch.install.yaml.template kibana.yaml.template coordinate.yaml.template ubi9.yaml.template data-generator.yaml.template | \
   perl -pe "s/\{\{ namespace \}\}/$namespace/g" | \
   perl -pe "s/\{\{ baseDomain \}\}/$baseDomain/g" | \
   perl -pe "s/\{\{ subscriptionOrg \}\}/$subscriptionOrg/g" | \

@@ -67,6 +67,11 @@ Under Administrator Perspective:
 Under the Developer Perspective:
 * Topology
   * Show the mixed environment and dig into details
+    * 3 Elasticsearch VMs for data and control plane
+    * 1 Elasticsearch container as coordinator node
+    * 1 Kibana container for data visualization
+    * 1 RHEL 9 container for data generation
+    * 1 RHEL 9 container for utilities to explore with ssh keys to the VMs
 
 Under Administrator Perspective:
 * Networking
@@ -78,6 +83,7 @@ Under Administrator Perspective:
        * Verify ```cluster_uuid``` is populated
        * Append ```/_cat/nodes``` to elasticsearch url and verify ```coordinate``` is a member
      * Open kibana route to show connected web application
+       * In Kibana create a new discovery for the "generated" index with timestamp
 * Virtualization
   * VirtualMachines
     * es-master00
