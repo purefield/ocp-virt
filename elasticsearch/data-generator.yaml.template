@@ -135,6 +135,7 @@ metadata:
   namespace: abc
   labels: {}
 spec:
+  host: data-generator.{{ baseDomain }}
   to:
     kind: Service
     name: data-generator
