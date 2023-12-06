@@ -153,6 +153,9 @@ metadata:
     app: windows
     vm.kubevirt.io/template: windows2k19-server-medium
     vm.kubevirt.io/template.namespace: openshift
+    app.kubernetes.io/part-of: application
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
 spec:
   dataVolumeTemplates:
     - apiVersion: cdi.kubevirt.io/v1beta1
