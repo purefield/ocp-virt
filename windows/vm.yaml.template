@@ -1,7 +1,9 @@
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: windows-vm-sysprep
+  namespace: {{ namespace }}
 data:
   Autounattend.xml: >
     <?xml version="1.0" encoding="utf-8"?>
@@ -148,7 +150,8 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   annotations:
-  name: windows
+  name: windows2019
+  namespace: {{ namespace }}
   labels:
     app: windows
     vm.kubevirt.io/template: windows2k19-server-medium

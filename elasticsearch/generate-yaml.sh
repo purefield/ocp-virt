@@ -45,6 +45,8 @@ for name in es-master00 es-master01 es-master02; do
       perl -MMIME::Base64 -pe "s/\{\{ sshPubKey \}\}/decode_base64('$sshPubKey')/ge" \
   >> $namespace.yaml
 done
+cat namespace.yaml.template ../windows/vm.yaml.template | perl -pe "s/\{\{ namespace \}\}/$namespace/g" > ../windows/vm.yaml
 echo "# Apply yaml using:"
+echo "oc apply -f ../windows/vm.yaml"
 echo "oc apply -f $namespace.yaml"
 echo "watch --color ./demo.sh"
