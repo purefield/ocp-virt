@@ -1,0 +1,17 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: windows-2019
+  labels:
+    instancetype.kubevirt.io/default-instancetype: u1.medium
+    instancetype.kubevirt.io/default-preference: windows
+  namespace: openshift-virtualization-os-images
+spec:
+  source:
+    http:
+      url: 'https://www.opentlc.com/download/ocp4_virt_foundations/Windows2019.iso'
+  storage:
+    resources:
+      requests:
+        storage: 5Gi
+
