@@ -149,7 +149,6 @@ data:
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  annotations:
   name: windows2019
   namespace: {{ namespace }}
   labels:
