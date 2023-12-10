@@ -79,7 +79,6 @@ spec:
     spec:
       containers:
         - name: data-generator
-          image: 'registry.access.redhat.com/ubi9/nodejs-20'
           stdin: true
           tty: true
           image: >-
