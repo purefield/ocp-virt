@@ -32,12 +32,10 @@ sudo chown $GUID-user: ~/.kube/config
 
 sudo yum install -y podman 
 
-demoprefix=''
-if [ -n "$GUID" ]
-then
-  demoprefix='demo.redhat.com/'
-fi
-oc apply -f cert-utils-operator.yaml -f ${demoprefix}openshift-cnv.yaml
+ocpversion=$(oc version -o json | grep openshiftVersion | perl -pe 's/^([^"]+"){3}([^"]*)\"/$2/g')
+cat openshift-cnv.yaml.template | \
+  perl -pe "s/\{\{ ocpversion \}\}/$ocpversion/g" | \
+oc apply -f cert-utils-operator.yaml -f -
 sleep 30
 oc wait --for=jsonpath='{.status.phase}'=Succeeded csv -n openshift-cnv -l operators.coreos.com/kubevirt-hyperconverged.openshift-cnv
 oc apply -f hyperconverged.yaml
