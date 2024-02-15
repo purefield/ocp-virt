@@ -33,8 +33,10 @@ sudo chown $GUID-user: ~/.kube/config
 sudo yum install -y podman 
 
 ocpversion=$(oc version -o json | grep openshiftVersion | perl -pe 's/^([^"]+"){3}([^"]*)\"/$2/g')
+cnvversion=$(oc get packagemanifests kubevirt-hyperconverged -o jsonpath="{.status.channels[].currentCSV}" | perl -pe 's/^.*?\.v(.*)/$1/')
 cat openshift-cnv.yaml.template | \
   perl -pe "s/\{\{ ocpversion \}\}/$ocpversion/g" | \
+  perl -pe "s/\{\{ cnvversion \}\}/$cnvversion/g" | \
 oc apply -f cert-utils-operator.yaml -f -
 sleep 30
 oc wait --for=jsonpath='{.status.phase}'=Succeeded csv -n openshift-cnv -l operators.coreos.com/kubevirt-hyperconverged.openshift-cnv
