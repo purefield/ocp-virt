@@ -20,6 +20,9 @@ if [ -n "$GUID" ]
 then
   altDomain=$baseDomain
   baseDomain="apps.$GUID.dynamic.opentlc.com"
+fi
+if [ -s $HOME/demo/demo.redhat.com/privkey.pem ]
+then
   oc create secret tls letsencrypt \
     --cert=$HOME/demo/demo.redhat.com/fullchain.pem \
     --key=$HOME/demo/demo.redhat.com/privkey.pem \
