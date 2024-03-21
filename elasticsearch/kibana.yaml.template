@@ -62,6 +62,8 @@ kind: Route
 metadata:
   name: kibana
   namespace: {{ namespace }}
+  labels:
+    app: kibana
   annotations:
     cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
 spec:
