@@ -53,4 +53,4 @@ echo "# Apply yaml using:"
 echo "oc apply -f ../windows/vm.yaml"
 echo "oc apply -f $namespace.yaml"
 echo "watch --color ./demo.sh"
-echo "./kibana.data-view.sh
+echo "./kibana.data-view.sh"
