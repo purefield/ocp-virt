@@ -34,6 +34,12 @@ spec:
     - secret:
         secretName: id-rsa
       name: id-rsa
+  securityContext:
+    seLinuxOptions:
+      level: 's0:c31,c10'
+    runAsNonRoot: true
+    seccompProfile:
+      type: "RuntimeDefault"
   containers:
     - name: ubi9
       image: 'registry.access.redhat.com/ubi9/ubi'
