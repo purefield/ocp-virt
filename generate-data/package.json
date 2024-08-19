@@ -4,7 +4,7 @@
   "description": "",
   "main": "generate-data.js",
   "dependencies": {
-    "@elastic/elasticsearch": "^8.7.0",
+    "@elastic/elasticsearch": "^8.13.1",
     "express": "^4.18.2",
     "lorem-ipsum": "^2.0.8",
     "morgan": "^1.10.0",
