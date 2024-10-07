@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/name: data-generator
     app.kubernetes.io/part-of: application
     app.openshift.io/runtime: nodejs
-    app.openshift.io/runtime-version: 16-ubi9-minimal
+    app.openshift.io/runtime-version: 18-ubi9-minimal
 spec:
   output:
     to:
