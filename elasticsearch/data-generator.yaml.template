@@ -36,7 +36,7 @@ spec:
       from:
         kind: ImageStreamTag
         namespace: openshift
-        name: 'nodejs:16-ubi9-minimal'
+        name: 'nodejs:18-ubi9-minimal'
   postCommit: {}
   source:
     type: Git
@@ -63,7 +63,7 @@ metadata:
     app.kubernetes.io/name: data-generator
     app.kubernetes.io/part-of: application
     app.openshift.io/runtime: nodejs
-    app.openshift.io/runtime-version: 16-ubi9-minimal
+    app.openshift.io/runtime-version: 18-ubi9-minimal
   annotations:
     app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
 spec:
