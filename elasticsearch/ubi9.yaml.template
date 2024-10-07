@@ -37,7 +37,6 @@ spec:
   securityContext:
     seLinuxOptions:
       level: 's0:c31,c10'
-    runAsNonRoot: true
     seccompProfile:
       type: "RuntimeDefault"
   containers:
