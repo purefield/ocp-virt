@@ -1,4 +1,0 @@
-<VirtualHost *:80>
- ServerName provision.{{ guid }}.dynamic.opentlc.com
- ServerAlias *.apps.{{ guid }}.dynamic.opentlc.com
-</VirtualHost>
