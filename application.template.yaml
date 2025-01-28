@@ -117,6 +117,12 @@ objects:
           node: ${VMNAME}
           elasticsearch: master
       spec:
+        readinessProbe:
+          httpGet:
+            port: 9200
+            path: /
+          initialDelaySeconds: 90
+          timeoutSeconds: 3
         domain:
           cpu:
             cores: 2
