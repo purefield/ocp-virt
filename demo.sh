@@ -18,6 +18,9 @@ _? "ORG" SUBSCRIPTION_ORG org $SUBSCRIPTION_ORG
 __ "Create resources" 2
 export SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)"
 
+__ "Create namespace" 3
+cmd "oc new-project $NAMESPACE"
+
 __ "Create common resources" 3
 cmd 'oc process -f installation.template.yaml -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 
