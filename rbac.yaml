@@ -11,6 +11,32 @@ apiVersion: project.openshift.io/v1
 metadata:
   name: engineering-vms
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: engineering-vms-user
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: engineering
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: engineering-vms-admin
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: engineering
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
