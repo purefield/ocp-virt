@@ -1,0 +1,753 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: ocp-virt-demo-install
+  annotations:
+    description: "OpenShift Virtualization Demo"
+    iconClass: "icon-elastic"
+    tags: "elasticsearch,virtualization"
+    template.openshift.io/bindable: "true"
+objects:
+- kind: Namespace
+  apiVersion: v1
+  metadata:
+    name: ${NAMESPACE}
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: letsencrypt
+    namespace: ${NAMESPACE}
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: id-rsa
+    namespace: ${NAMESPACE}
+  stringData:
+    demo.id_rsa: ${SSH_PUBLIC_KEY}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: install-scripts
+    namespace: ${NAMESPACE}
+  data:
+    elasticsearch.sh: |-
+      subscription-manager register --activationkey ${SUBSCRIPTION_KEY} --org ${SUBSCRIPTION_ORG}
+      subscription-manager attach --auto
+      cat << EOF > /etc/yum.repos.d/elastic.repo
+      [elasticsearch]
+      name=Elasticsearch repository for 8.x packages
+      baseurl=https://artifacts.elastic.co/packages/8.x/yum
+      gpgcheck=1
+      gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      enabled=0
+      autorefresh=1
+      type=rpm-md
+      EOF
+      update-crypto-policies --set DEFAULT:SHA1
+      rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      dnf install -y --enablerepo=elasticsearch elasticsearch-8.7.0
+      update-crypto-policies --set DEFAULT
+      systemctl daemon-reload
+      mkdir -p /srv/elasticsearch/config
+      mkdir -p /srv/elasticsearch/data
+      chown elasticsearch:elasticsearch /srv/elasticsearch -R
+      mkfs.xfs /dev/disk/by-id/virtio-datadisk
+      config=$(ls -1 /dev/disk/by-id/virtio-00yaml)
+      mount $config /srv/elasticsearch/config
+      mount /dev/disk/by-id/virtio-datadisk /srv/elasticsearch/data
+      echo "$config /srv/elasticsearch/config iso9660 defaults 0 0" >> /etc/fstab
+      echo '/dev/disk/by-id/virtio-datadisk /srv/elasticsearch/data   xfs defaults 0 0' >> /etc/fstab
+      mv /etc/elasticsearch/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml.org
+      mv /etc/elasticsearch/jvm.options       /etc/elasticsearch/jvm.options.org
+      ln -sf /srv/elasticsearch/config/elasticsearch.conf /etc/elasticsearch/elasticsearch.yml
+      ln -sf /srv/elasticsearch/config/jvm.options        /etc/elasticsearch/jvm.options
+      systemctl enable elasticsearch --now
+    system.sh: |-
+      cert=$(ls -1 /dev/disk/by-id/virtio-00cert)
+      mount $cert /etc/cockpit/ws-certs.d/
+      if [ -f "/etc/cockpit/ws-certs.d/tls.crt" ]; then echo "$cert /etc/cockpit/ws-certs.d/ xfs defaults 0 0" >> /etc/fstab;
+      else umount $cert; fi
+      systemctl enable cockpit.socket --now
+  immutable: false
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: es-master-svc
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+      - name: elasticsearch
+        protocol: TCP
+        port: 9200
+        targetPort: 9200
+    selector:
+      app: elasticsearch
+      elasticsearch: master
+- kind: Route
+  apiVersion: route.openshift.io/v1
+  metadata:
+    name: elasticsearch
+    namespace: ${NAMESPACE}
+    annotations:
+      cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
+    labels:
+      app: elasticsearch
+      role: api
+  spec:
+    host: elasticsearch.${BASEDOMAIN}
+    to:
+      kind: Service
+      name: es-master-svc
+    port:
+      targetPort: elasticsearch
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+    wildcardPolicy: None
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: kibana
+    namespace: ${NAMESPACE}
+    annotations:
+      app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
+    labels:
+      app.kubernetes.io/part-of: kibana
+      app.openshift.io/runtime: elastic
+      app.openshift.io/name: kibana
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: kibana
+    template:
+      metadata:
+        labels:
+          app: kibana
+      spec:
+        # securityContext:
+        #   seccompProfile:
+        #     type: RuntimeDefault
+        containers:
+          - name: kibana
+            image: docker.elastic.co/kibana/kibana:8.7.0
+            ports:
+              - containerPort: 5601
+            # securityContext:
+            #   allowPrivilegeEscalation: false
+            #   runAsNonRoot: true
+            #   capabilities:
+            #     drop:
+            #       - ALL
+            env:
+              - name: ELASTICSEARCH_HOSTS
+                value: http://coordinate:9200
+              - name: SERVER_PUBLICBASEURL
+                value: https://kibana-demo.${BASEDOMAIN}
+              - name: SERVER_NAME
+                value: kibana-demo.${BASEDOMAIN}
+            resources: {}
+        restartPolicy: Always
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: kibana
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+      - name: ui
+        port: 5601
+        targetPort: 5601
+    selector:
+      app: kibana
+- kind: Route
+  apiVersion: route.openshift.io/v1
+  metadata:
+    name: kibana
+    namespace: ${NAMESPACE}
+    labels:
+      app: kibana
+    annotations:
+      cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
+  spec:
+    host: kibana.${BASEDOMAIN}
+    to:
+      kind: Service
+      name: kibana
+    port:
+      targetPort: ui
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+    wildcardPolicy: None
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: coordinate
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+      - name: elasticsearch
+        port: 9200
+        targetPort: 9200
+      - name: elasticsearch-discovery
+        port: 9300
+        targetPort: 9300
+    selector:
+      app: elasticsearch
+      elasticsearch: coordinate
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: coordinate
+    namespace: ${NAMESPACE}
+    annotations:
+      app.openshift.io/connects-to: '[{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master00"},{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master01"},{"apiVersion":"kubevirt.io/v1","kind":"VirtualMachine","name":"es-master02"}]'
+    labels:
+      app.kubernetes.io/part-of: elasticsearch
+      app.openshift.io/runtime: elastic
+      app.openshift.io/name: coordinate
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: elasticsearch
+        elasticsearch: coordinate
+    template:
+      metadata:
+        labels:
+          app: elasticsearch
+          elasticsearch: coordinate
+      spec:
+        # securityContext:
+        #   seccompProfile:
+        #     type: RuntimeDefault
+        containers:
+          - name: coordinate
+            image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0-amd64
+            ports:
+              - containerPort: 9200
+              - containerPort: 9300
+            # securityContext:
+            #   allowPrivilegeEscalation: false
+            #   runAsNonRoot: true
+            #   capabilities:
+            #     drop:
+            #       - ALL
+            env:
+            - name: ES_JAVA_OPTS
+              value: -Xms4g -Xmx4g
+            - name: node.name
+              value: coordinate
+            - name: cluster.name
+              value: demo
+            - name: xpack.security.enabled
+              value: "false"
+            - name: xpack.security.transport.ssl.enabled
+              value: "false"
+            - name: xpack.security.http.ssl.enabled
+              value: "false"
+            - name: discovery.seed_hosts
+              value: es-master00,es-master01,es-master02
+            - name: node.roles
+              value: "[]"
+            - name: network.publish_host
+              value: coordinate.${NAMESPACE}.svc.cluster.local
+            - name: network.host
+              value: _site_
+            resources: {}
+        restartPolicy: Always
+- kind: Route
+  apiVersion: route.openshift.io/v1
+  metadata:
+    name: coordinate
+    namespace: ${NAMESPACE}
+    annotations:
+      cert-utils-operator.redhat-cop.io/certs-from-secret: letsencrypt
+    labels:
+      app: elasticsearch
+      role: coordinate
+  spec:
+    host: coordinate.${BASEDOMAIN}
+    to:
+      kind: Service
+      name: coordinate
+    port:
+      targetPort: elasticsearch
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+    wildcardPolicy: None
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: ubi9-install
+    namespace: ${NAMESPACE}
+  data:
+    install.sh: |-
+      mkdir /root/.ssh/
+      cp /mnt/demo.id_rsa /root/.ssh/id_rsa
+      chmod 700 /root/.ssh/
+      chmod 0400 /root/.ssh/id_rsa
+      yum install -y openssh-clients rsync
+      /bin/sh
+  immutable: false
+- kind: Pod
+  apiVersion: v1
+  metadata:
+    name: ubi9
+    annotations:
+      app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"kibana"}]'
+    labels:
+      app: ubi9
+      app.kubernetes.io/part-of: utility
+      app.openshift.io/runtime: redhat
+      app.openshift.io/name: utility
+    namespace: ${NAMESPACE}
+  spec:
+    volumes:
+      - configMap:
+          name: ubi9-install
+        name: ubi9-install
+      - secret:
+          secretName: id-rsa
+        name: id-rsa
+    securityContext:
+      seLinuxOptions:
+        level: 's0:c31,c10'
+      seccompProfile:
+        type: "RuntimeDefault"
+    containers:
+      - name: ubi9
+        image: 'registry.access.redhat.com/ubi9/ubi'
+        command: ["/bin/sh"]
+        args: ["/usr/local/bin/install.sh"]
+        stdin: true
+        tty: true
+        volumeMounts:
+          - name: ubi9-install
+            readOnly: true
+            mountPath: /usr/local/bin/install.sh
+            subPath: install.sh
+          - name: id-rsa
+            readOnly: true
+            mountPath: /mnt/
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: data-generator-imagestream
+    namespace: ${NAMESPACE}
+- kind: BuildConfig
+  apiVersion: build.openshift.io/v1
+  metadata:
+    annotations:
+      app.openshift.io/vcs-ref: ''
+      app.openshift.io/vcs-uri: 'https://github.com/purefield/ocp-virt'
+      openshift.io/generated-by: OpenShiftWebConsole
+    name: data-generator-buildconfig
+    namespace: ${NAMESPACE}
+    labels:
+      app: data-generator
+      app.kubernetes.io/component: data-generator
+      app.kubernetes.io/instance: data-generator
+      app.kubernetes.io/name: data-generator
+      app.kubernetes.io/part-of: application
+      app.openshift.io/runtime: nodejs
+      app.openshift.io/runtime-version: 18-ubi9-minimal
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'data-generator-imagestream:latest'
+    resources: {}
+    successfulBuildsHistoryLimit: 2
+    failedBuildsHistoryLimit: 2 
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: 'nodejs:18-ubi9-minimal'
+    postCommit: {}
+    source:
+      type: Git
+      git:
+        uri: 'https://github.com/purefield/ocp-virt'
+      contextDir: /generate-data
+    triggers:
+      - type: Generic
+        generic:
+          secretReference:
+            name: data-generator-generic-webhook-secret
+      - type: ConfigChange
+    runPolicy: Serial
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: data-generator
+    namespace: ${NAMESPACE}
+    labels:
+      app: data-generator
+      app.kubernetes.io/component: data-generator
+      app.kubernetes.io/instance: data-generator
+      app.kubernetes.io/name: data-generator
+      app.kubernetes.io/part-of: application
+      app.openshift.io/runtime: nodejs
+      app.openshift.io/runtime-version: 18-ubi9-minimal
+    annotations:
+      app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: data-generator
+    template:
+      metadata:
+        labels:
+          app: data-generator
+          deployment: data-generator
+      spec:
+        containers:
+          - name: data-generator
+            stdin: true
+            tty: true
+            image: >-
+              image-registry.openshift-image-registry.svc:5000/${NAMESPACE}/data-generator-imagestream
+            ports:
+              - containerPort: 3000
+                protocol: TCP
+            env:
+              - name: ES_NODE
+                value: coordinate
+              - name: ES_PORT
+                value: '9200'
+              - name: ES_INDEX
+                value: generated
+              - name: DATA_SIZE
+                value: '5'
+              - name: DATE_RATE
+                value: '10'
+              - name: DATA_BATCH
+                value: '100'
+            resources: {}
+            imagePullPolicy: Always
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        dnsPolicy: ClusterFirst
+        securityContext: {}
+        schedulerName: default-scheduler
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 50%
+        maxSurge: 25%
+    revisionHistoryLimit: 2
+    progressDeadlineSeconds: 60
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: data-generator
+    namespace: ${NAMESPACE}
+  spec:
+    selector:
+      app: data-generator
+    ports:
+      - protocol: TCP
+        port: 3000
+        targetPort: 3000
+- kind: Route
+  apiVersion: route.openshift.io/v1
+  metadata:
+    name: data-generator
+    namespace: ${NAMESPACE}
+    labels: {}
+  spec:
+    host: data-generator.${BASEDOMAIN}
+    to:
+      kind: Service
+      name: data-generator
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      destinationCACertificate: ''
+    port:
+      targetPort: 3000
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: windows-vm-sysprep
+    namespace: ${NAMESPACE}
+  data:
+    Autounattend.xml: >
+      <?xml version="1.0" encoding="utf-8"?>
+  
+      <unattend xmlns="urn:schemas-microsoft-com:unattend"
+      xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="urn:schemas-microsoft-com:unattend">
+        <settings pass="windowsPE">
+          <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <DiskConfiguration>
+              <Disk wcm:action="add">
+                <CreatePartitions>
+                  <CreatePartition wcm:action="add">
+                    <Order>1</Order>
+                    <Extend>true</Extend>
+                    <Type>Primary</Type>
+                  </CreatePartition>
+                </CreatePartitions>
+                <ModifyPartitions>
+                  <ModifyPartition wcm:action="add">
+                    <Active>true</Active>
+                    <Format>NTFS</Format>
+                    <Label>System</Label>
+                    <Order>1</Order>
+                    <PartitionID>1</PartitionID>
+                  </ModifyPartition>
+                </ModifyPartitions>
+                <DiskID>0</DiskID>
+                <WillWipeDisk>true</WillWipeDisk>
+              </Disk>
+            </DiskConfiguration>
+            <ImageInstall>
+              <OSImage>
+                <InstallFrom>
+                  <MetaData wcm:action="add">
+                    <Key>/IMAGE/NAME</Key>
+                    <Value>Windows Server 2019 SERVERSTANDARD</Value>
+                  </MetaData>
+                </InstallFrom>
+                <InstallTo>
+                  <DiskID>0</DiskID>
+                  <PartitionID>1</PartitionID>
+                </InstallTo>
+              </OSImage>
+            </ImageInstall>
+            <UserData>
+              <AcceptEula>true</AcceptEula>
+              <FullName>Administrator</FullName>
+              <Organization>My Organization</Organization>
+            </UserData>
+            <EnableFirewall>false</EnableFirewall>
+          </component>
+          <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <SetupUILanguage>
+              <UILanguage>en-US</UILanguage>
+            </SetupUILanguage>
+            <InputLocale>en-US</InputLocale>
+            <SystemLocale>en-US</SystemLocale>
+            <UILanguage>en-US</UILanguage>
+            <UserLocale>en-US</UserLocale>
+          </component>
+        </settings>
+        <settings pass="offlineServicing">
+          <component name="Microsoft-Windows-LUA-Settings" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <EnableLUA>false</EnableLUA>
+          </component>
+        </settings>
+        <settings pass="specialize">
+          <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <AutoLogon>
+              <Password>
+                <Value>R3dh4t1!</Value>
+                <PlainText>true</PlainText>
+              </Password>
+              <Enabled>true</Enabled>
+              <LogonCount>999</LogonCount>
+              <Username>Administrator</Username>
+            </AutoLogon>
+            <OOBE>
+              <HideEULAPage>true</HideEULAPage>
+              <HideLocalAccountScreen>true</HideLocalAccountScreen>
+              <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+              <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+              <NetworkLocation>Work</NetworkLocation>
+              <ProtectYourPC>3</ProtectYourPC>
+              <SkipMachineOOBE>true</SkipMachineOOBE>
+            </OOBE>
+            <UserAccounts>
+              <LocalAccounts>
+                <LocalAccount wcm:action="add">
+                  <Description>Local Administrator Account</Description>
+                  <DisplayName>Administrator</DisplayName>
+                  <Group>Administrators</Group>
+                  <Name>Administrator</Name>
+                </LocalAccount>
+              </LocalAccounts>
+            </UserAccounts>
+            <TimeZone>Eastern Standard Time</TimeZone>
+          </component>
+        </settings>
+        <settings pass="oobeSystem">
+          <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <InputLocale>en-US</InputLocale>
+            <SystemLocale>en-US</SystemLocale>
+            <UILanguage>en-US</UILanguage>
+            <UserLocale>en-US</UserLocale>
+          </component>
+          <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <AutoLogon>
+              <Password>
+                <Value>R3dh4t1!</Value>
+                <PlainText>true</PlainText>
+              </Password>
+              <Enabled>true</Enabled>
+              <LogonCount>999</LogonCount>
+              <Username>Administrator</Username>
+            </AutoLogon>
+            <OOBE>
+              <HideEULAPage>true</HideEULAPage>
+              <HideLocalAccountScreen>true</HideLocalAccountScreen>
+              <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+              <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+              <NetworkLocation>Work</NetworkLocation>
+              <ProtectYourPC>3</ProtectYourPC>
+              <SkipMachineOOBE>true</SkipMachineOOBE>
+            </OOBE>
+            <UserAccounts>
+              <LocalAccounts>
+                <LocalAccount wcm:action="add">
+                  <Description>Local Administrator Account</Description>
+                  <DisplayName>Administrator</DisplayName>
+                  <Group>Administrators</Group>
+                  <Name>Administrator</Name>
+                </LocalAccount>
+              </LocalAccounts>
+            </UserAccounts>
+            <TimeZone>Eastern Standard Time</TimeZone>
+          </component>
+        </settings>
+      </unattend>
+- kind: VirtualMachine
+  apiVersion: kubevirt.io/v1
+  metadata:
+    name: windows2019
+    namespace: ${NAMESPACE}
+    labels:
+      app: windows
+      vm.kubevirt.io/template: windows2k19-server-medium
+      vm.kubevirt.io/template.namespace: openshift
+      app.kubernetes.io/part-of: application
+    annotations:
+      app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"coordinate"}]'
+  spec:
+    dataVolumeTemplates:
+      - apiVersion: cdi.kubevirt.io/v1beta1
+        kind: DataVolume
+        metadata:
+          annotations:
+            cdi.kubevirt.io/storage.bind.immediate.requested: 'true'
+          creationTimestamp: null
+          name: windows
+        spec:
+          source:
+            blank: {}
+          storage:
+            resources:
+              requests:
+                storage: 60Gi
+      - metadata:
+          creationTimestamp: null
+          name: windows-installation-cdrom
+        spec:
+          source:
+            pvc:
+              name: windows-2019
+              namespace: openshift-virtualization-os-images
+          storage:
+            resources:
+              requests:
+                storage: 5Gi
+    running: true
+    template:
+      metadata:
+        annotations:
+          vm.kubevirt.io/flavor: medium
+          vm.kubevirt.io/os: windows2k19
+          vm.kubevirt.io/workload: server
+        creationTimestamp: null
+        labels:
+          kubevirt.io/domain: windows
+          kubevirt.io/size: medium
+      spec:
+        architecture: amd64
+        domain:
+          clock:
+            timer:
+              hpet:
+                present: false
+              hyperv: {}
+              pit:
+                tickPolicy: delay
+              rtc:
+                tickPolicy: catchup
+            utc: {}
+          cpu:
+            cores: 1
+            sockets: 1
+            threads: 1
+          devices:
+            disks:
+              - bootOrder: 2
+                disk:
+                  bus: sata
+                name: rootdisk
+              - bootOrder: 1
+                cdrom:
+                  bus: sata
+                name: installation-cdrom
+              - cdrom:
+                  bus: sata
+                name: windows-drivers-disk
+              - cdrom:
+                  bus: sata
+                name: sysprep
+            inputs:
+              - bus: usb
+                name: tablet
+                type: tablet
+            interfaces:
+              - masquerade: {}
+                model: e1000e
+                name: default
+          memory:
+            guest: 4Gi
+        networks:
+          - name: default
+            pod: {}
+        terminationGracePeriodSeconds: 3600
+        volumes:
+          - dataVolume:
+              name: windows
+            name: rootdisk
+          - dataVolume:
+              name: windows-installation-cdrom
+            name: installation-cdrom
+          - containerDisk:
+              image: >-
+                registry.redhat.io/container-native-virtualization/virtio-win-rhel9
+            name: windows-drivers-disk
+          - name: sysprep
+            sysprep:
+              configMap:
+                name: windows-vm-sysprep
+parameters:
+- name: NAMESPACE
+  description: Namespace to use
+  required: true
+- name: BASEDOMAIN
+  description: Base Domain for externally exposed services
+  required: true
+- name: SUBSCRIPTION_ORG
+  description: Red Hat Subscription ORG string
+  required: true
+- name: SUBSCRIPTION_KEY
+  description: Red Hat Subscription KEY string
+  required: true
+- name: SSH_PUBLIC_KEY
+  description: SSH Public Key
+  required: true
+labels:
+  demo: ocp-virt

@@ -1,0 +1,226 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: ocp-virt-demo-vm
+  annotations:
+    description: "OpenShift Virtualization Demo"
+    iconClass: "icon-elastic"
+    tags: "elasticsearch,virtualization"
+    template.openshift.io/bindable: "true"
+objects:
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: ${VMNAME}-conf
+    namespace: ${NAMESPACE}
+  data:
+    elasticsearch.conf: |-
+      cluster.name: demo
+      node.name: ${VMNAME}
+      node.roles: [ master, data ]
+      network.host: _site_
+      network.publish_host: ${VMNAME}.${NAMESPACE}.svc.cluster.local
+      discovery.seed_hosts: ["es-master00","es-master01","es-master02"]
+      cluster.initial_master_nodes: ["es-master00","es-master01","es-master02"]
+      path.data: /srv/elasticsearch
+      path.logs: /var/log/elasticsearch
+      xpack.security.enabled: false
+      xpack.security.transport.ssl.enabled: false
+      xpack.security.http.ssl.enabled: false
+    jvm.options: |-
+      -Xms4096m
+      -Xmx4096m
+      -XX:+DisableExplicitGC
+      -XX:+AlwaysPreTouch
+      -server
+      -Djava.awt.headless=true
+      -Dfile.encoding=UTF-8
+      -Djna.nosys=true
+      -Djdk.io.permissionsUseCanonicalPath=true
+      -Dio.netty.noUnsafe=true
+      -Dio.netty.noKeySetOptimization=true
+      -Dlog4j.shutdownHookEnabled=false
+      -Dlog4j2.disable.jmx=true
+      -Dlog4j.skipJansi=true
+      -XX:+HeapDumpOnOutOfMemoryError
+  immutable: false
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: ${VMNAME}
+    namespace: ${NAMESPACE}
+  spec:
+    selector:
+      node: ${VMNAME}
+    ports:
+      - name: elasticsearch
+        protocol: TCP
+        port: 9200
+        targetPort: 9200
+      - name: elasticsearch-discovery
+        protocol: TCP
+        port: 9300
+        targetPort: 9300
+      - name: ssh
+        protocol: TCP
+        port: 22
+        targetPort: 22
+      - name: cockpit
+        protocol: TCP
+        port: 9090
+        targetPort: 9090
+- kind: VirtualMachine
+  apiVersion: kubevirt.io/v1
+  metadata:
+    name: ${VMNAME}
+    namespace: ${NAMESPACE}
+    labels:
+      app.kubernetes.io/part-of: elasticsearch
+  spec:
+    dataVolumeTemplates:
+      - metadata:
+          creationTimestamp: null
+          name: ${VMNAME}-data
+          namespace: ${NAMESPACE}
+        spec:
+          preallocation: false
+          source:
+            blank: {}
+          storage:
+            resources:
+              requests:
+                storage: 80Gi
+      - metadata:
+          creationTimestamp: null
+          name: ${VMNAME}
+          namespace: ${NAMESPACE}
+        spec:
+          preallocation: false
+          sourceRef:
+            kind: DataSource
+            name: rhel9
+            namespace: openshift-virtualization-os-images
+          storage:
+            resources:
+              requests:
+                storage: 30Gi
+            volumeMode: Block
+    running: true
+    template:
+      metadata:
+        annotations:
+          vm.kubevirt.io/os: rhel9
+          vm.kubevirt.io/workload: server
+        labels:
+          app: elasticsearch
+          node: ${VMNAME}
+          elasticsearch: master
+      spec:
+        domain:
+          cpu:
+            cores: 2
+            sockets: 1
+            threads: 2
+          devices:
+            disks:
+              - bootOrder: 1
+                disk:
+                  bus: virtio
+                name: rootdisk
+              - disk:
+                  bus: virtio
+                name: cloudinitdisk
+              - disk:
+                  bus: virtio
+                name: elasticsearch-yaml
+                serial: 00yaml
+              - disk:
+                  bus: virtio
+                name: install-scripts
+                serial: 0000sh
+              - disk:
+                  bus: virtio
+                name: letsencrypt
+                serial: 00cert
+              - disk:
+                  bus: virtio
+                name: data
+                serial: datadisk
+            interfaces:
+              - masquerade: {}
+                model: virtio
+                name: default
+          resources:
+            overcommitGuestOverhead: true
+            requests:
+              memory: 8Gi
+          memory:
+            guest: 16Gi
+        evictionStrategy: LiveMigrate
+        networks:
+          - name: default
+            pod: {}
+        terminationGracePeriodSeconds: 180
+        volumes:
+          - dataVolume:
+              name: ${VMNAME}
+            name: rootdisk
+          - dataVolume:
+              name: ${VMNAME}-data
+            name: data
+          - cloudInitNoCloud:
+              userData: |-
+                #cloud-config
+                hostname: ${VMNAME}
+                runcmd:
+                  - mount /dev/disk/by-id/virtio-0000sh /mnt/
+                  - bash /mnt/system.sh
+                  - bash /mnt/elasticsearch.sh
+                  - umount /mnt
+                user: elasticsearch
+                password: redhat
+                chpasswd: { expire: False }
+                ssh_authorized_keys:
+                 - ${SSH_PUBLIC_KEY}
+            name: cloudinitdisk
+          - configMap:
+              name: ${VMNAME}-conf
+            name: elasticsearch-yaml
+          - configMap:
+              name: install-scripts
+            name: install-scripts
+          - secret:
+              secretName: letsencrypt
+            name: letsencrypt
+- kind: Route
+  apiVersion: route.openshift.io/v1
+  metadata:
+    name: ${VMNAME}
+    namespace: ${NAMESPACE}
+  spec:
+    host: ${VMNAME}.${BASEDOMAIN}
+    to:
+      kind: Service
+      name: ${VMNAME}
+    port:
+      targetPort: cockpit
+    tls:
+      termination: passthrough
+      insecureEdgeTerminationPolicy: Redirect
+    wildcardPolicy: None
+parameters:
+- name: VMNAME
+  description: Virtual Machine Name
+  required: true
+- name: NAMESPACE
+  description: Namespace to use
+  required: true
+- name: BASEDOMAIN
+  description: Base Domain for externally exposed services
+  required: true
+- name: SSH_PUBLIC_KEY
+  description: SSH Public Key
+  required: true
+labels:
+  demo: ocp-virt
