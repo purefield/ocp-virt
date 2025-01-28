@@ -181,8 +181,8 @@ objects:
       termination: edge
       insecureEdgeTerminationPolicy: Redirect
     wildcardPolicy: None
-  apiVersion: v1
 - kind: Service
+  apiVersion: v1
   metadata:
     name: coordinate
     namespace: ${NAMESPACE}

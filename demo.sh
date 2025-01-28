@@ -45,4 +45,7 @@ ___ "Are the 3 VMs and Coordinate Container up?"
 __ "Apply elasticsearch index pattern" 3
 cmd ./elasticsearch/kibana.data-view.sh
 
-__ "The End" 2
+__ "What did we create?" 2
+cmd oc get all -l demo=ocp-virt -n $NAMESPACE
+
+__ "The End" 1
