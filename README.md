@@ -24,18 +24,11 @@ cd ~/demo/
 ### Demo Prep
 Log into the OpenShift Cluster
 
-Run the demo script from the same bastion to create a fresh elasticsearch cluster in a new namespace (first argument or prompt, defaults to last namespace used or ```next-gen-virt```)
+Run the demo script from the same bastion to create a fresh elasticsearch cluster in a new namespace (first argument or prompt, defaults to ```ocp-virt```)
 ```sh
-cd elasticsearch/
-./generate-yaml.sh next-gen-virt
-oc apply -f next-gen-virt.yaml
+./demo.sh next-gen-virt
 ```
 Wait for installation (approximately 4 mins in normal circumstances)
-
-Once the VMs are running, execute:
-```
-watch --color ./demo.sh
-```
 
 ### Demo Highlights
 Under Administrator Perspective:
