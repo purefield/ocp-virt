@@ -29,8 +29,13 @@ done
 
 __ "Run demo:" 2
 __ "Wait for virtual machines" 3
-oo 4 "oc get vmi -n foobar --no-headers=true | wc -l"
+oo 4 "oc get vmi -n $NAMESPACE --no-headers=true | wc -l"
 
 __ "Wait for elasticsearch" 3
+jsonpath="{range .items[*]}{@.metadata.name}{': '}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
+oo 3 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -o jsonpath="'$jsonpath'" | grep True | wc -l'
+
+__ "Apply elasticsearch index pattern" 3
+
 __ "Wait for kibana" 3
 # cmd watch --color ./demo.sh
