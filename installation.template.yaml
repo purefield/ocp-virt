@@ -182,7 +182,7 @@ objects:
       insecureEdgeTerminationPolicy: Redirect
     wildcardPolicy: None
   apiVersion: v1
-  kind: Service
+- kind: Service
   metadata:
     name: coordinate
     namespace: ${NAMESPACE}

@@ -38,7 +38,11 @@ __ "Wait for elasticsearch" 3
 jsonpath="{range .items[*]}{@.metadata.name}{': '}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
 oo 3 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -o jsonpath="'$jsonpath'" | grep True | wc -l'
 
-__ "Apply elasticsearch index pattern" 3
+__ "Confirm elasticsearch cluster is healthy" 3
+cmd ./elasticsearch/demo.sh
+___ "Are the 3 VMs and Coordinate Container up?"
 
-__ "Wait for kibana" 3
-# cmd watch --color ./demo.sh
+__ "Apply elasticsearch index pattern" 3
+cmd ./elasticsearch/kibana.data-view.sh
+
+__ "The End" 2
