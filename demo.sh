@@ -1,5 +1,6 @@
 . ./format/format.sh
 NAMESPACE=$1
+VMS=$2
 __ "OpneShift Virtualization Demo" 1
 __ "Configuration" 2
 
@@ -26,11 +27,11 @@ cmd "oc new-project $NAMESPACE"
 
 __ "Create common resources" 3
 cmd oc apply -f installation.template.yaml -n openshift
-cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
+cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
 
 __ "Create virtual machines" 3
 cmd oc apply -f application.template.yaml -n openshift
-for i in seq 1 $vms; do
+for i in $(seq 0 $((vms -1))); do
   name=$(printf "es-master%02d" "$i")
   __ "$name" 4
   cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
@@ -46,7 +47,7 @@ oo $vms 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -
 
 __ "Confirm elasticsearch cluster is healthy" 3
 cmd ./elasticsearch/demo.sh
-___ "Are the 3 VMs and Coordinate Container up?"
+___ "Are the $vms VMs and Coordinate Container up?"
 
 __ "Apply elasticsearch index pattern" 3
 cmd ./elasticsearch/kibana.data-view.sh
@@ -54,4 +55,4 @@ cmd ./elasticsearch/kibana.data-view.sh
 __ "What did we create?" 2
 cmd oc get all -l demo=ocp-virt -n $NAMESPACE
 
-__ "The End" 1
+__ "Have fun storming the castle!" 1

@@ -245,7 +245,7 @@ objects:
             #       - ALL
             env:
             - name: ES_JAVA_OPTS
-              value: -Xms4g -Xmx4g
+              value: -Xms8g -Xmx8g
             - name: node.name
               value: coordinate
             - name: cluster.name
@@ -741,6 +741,52 @@ objects:
             sysprep:
               configMap:
                 name: windows-vm-sysprep
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: elasticsearch-init-job
+    namespace: ${NAMESPACE}
+  spec:
+    ttlSecondsAfterFinished: 30
+    template:
+      metadata:
+        name: elasticsearch-init
+      spec:
+        restartPolicy: Never
+        containers:
+        - name: es-seed
+          image: curlimages/curl:latest  # Using a lightweight Curl image
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              echo "Waiting for Elasticsearch to be ready..."
+              until curl -s -o /dev/null "http://coordinate:9200/_cluster/health"; do
+                sleep 5;
+              done
+
+              echo "Creating the default index template..."
+              curl -X PUT "http://coordinate:9200/_index_template/default_template" -H "Content-Type: application/json" -d '
+              {
+                "index_patterns": ["generated"],
+                "template": {
+                  "settings": {
+                    "number_of_shards": '${SHARDS}',
+                    "number_of_replicas": 1
+                  },
+                  "mappings": {
+                    "properties": {
+                      "timestamp": { "type": "date" },
+                      "message": { "type": "text" }
+                    }
+                  }
+                }
+              }'
+
+              echo "Deleting the 'generated' index..."
+              curl -X DELETE "http://coordinate:9200/generated"
+
+              echo "Elasticsearch index template setup complete."
 parameters:
 - name: NAMESPACE
   description: Namespace to use
@@ -748,6 +794,9 @@ parameters:
 - name: BASEDOMAIN
   description: Base Domain for externally exposed services
   required: true
+- name: SHARDS
+  description: Default number of shards per index
+  value: "3"
 - name: SUBSCRIPTION_ORG
   description: Red Hat Subscription ORG string
   required: true

@@ -180,9 +180,9 @@ objects:
           resources:
             overcommitGuestOverhead: true
             requests:
-              memory: 8Gi
+              memory: 4Gi
           memory:
-            guest: 16Gi
+            guest: 8Gi
         evictionStrategy: LiveMigrate
         networks:
           - name: default

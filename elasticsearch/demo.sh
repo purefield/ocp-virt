@@ -13,7 +13,7 @@ if [[ $? -eq 0 && "x$(echo "$out" | grep es-master)" != "x" ]]; then
     echo "$out" 
   else
     echo -e "[ $OK    ] Coordinate container is part of the VM cluster:" 
-    echo "$out" | grep coordinate -B10 -A10 --color=always
+    echo "$out" | sort -k9,10 | grep coordinate -A100 --color=always
   fi
 else
   printf "[ $ERROR ] Not ready yet.\n"
