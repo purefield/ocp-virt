@@ -6,6 +6,9 @@ __ "Configuration" 2
 __ "Namespace" 3
 _? "What namespace should we use?" NAMESPACE ocp-virt $NAMESPACE
 
+__ "Number VMs" 3
+_? "How many Elasticsearch VMs should we use?" vms 3 $VMS
+
 __ "Base Domain" 3
 BASEDOMAIN=$(oc get --namespace openshift-ingress-operator ingresscontrollers/default -o jsonpath='{.status.domain}')
 _? "What base domain should we use?" BASEDOMAIN "" $BASEDOMAIN
@@ -27,18 +30,19 @@ cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPA
 
 __ "Create virtual machines" 3
 cmd oc apply -f application.template.yaml -n openshift
-for name in es-master00 es-master01 es-master02; do
+for i in seq 1 $vms; do
+  name=$(printf "es-master%02d" "$i")
   __ "$name" 4
   cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 done
 
 __ "Run demo:" 2
 __ "Wait for virtual machines" 3
-oo 4 "oc get vmi -n $NAMESPACE --no-headers=true | wc -l"
+oo $((vms + 1)) "oc get vmi -n $NAMESPACE --no-headers=true | wc -l"
 
 __ "Wait for elasticsearch" 3
 jsonpath="{range .items[*]}{@.metadata.name}{': '}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
-oo 3 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -o jsonpath="'$jsonpath'" | grep True | wc -l'
+oo $vms 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -o jsonpath="'$jsonpath'" | grep True | wc -l'
 
 __ "Confirm elasticsearch cluster is healthy" 3
 cmd ./elasticsearch/demo.sh
