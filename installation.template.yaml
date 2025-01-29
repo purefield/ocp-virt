@@ -2,12 +2,20 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: ocp-virt-demo-install
+  name: ocp-virt-demo-setup-template
   annotations:
-    description: "OpenShift Virtualization Demo"
     iconClass: "icon-elastic"
     tags: "elasticsearch,virtualization"
     template.openshift.io/bindable: "true"
+    openshift.io/display-name: OpenShift Virtualization Demo - 1/2 Environment Setup
+    openshift.io/documentation-url: https://github.com/purefield/ocp-virt
+    description: "OpenShift Virtualization and Container Application Stack Demo.
+    This template provides a demo application stack around Elasticsearch.
+
+    Bringing VMs and Containers together.
+
+    It includes Elasticsearch VMs, Kibana, data generation application and coordinator containers."
+    openshift.io/provider-display-name: Daniel Schimpfoessl
 objects:
 - kind: Namespace
   apiVersion: v1

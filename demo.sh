@@ -22,12 +22,14 @@ __ "Create namespace" 3
 cmd "oc new-project $NAMESPACE"
 
 __ "Create common resources" 3
-cmd 'oc process -f installation.template.yaml -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
+cmd oc apply -f installation.template.yaml -n openshift
+cmd 'oc process ocp-virt-demo-vms-template -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 
 __ "Create virtual machines" 3
+cmd oc apply -f application.template.yaml -n openshift
 for name in es-master00 es-master01 es-master02; do
   __ "$name" 4
-  cmd 'oc process -f application.template.yaml -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
+  cmd 'oc process ocp-virt-demo-setup-template -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 done
 
 __ "Run demo:" 2
