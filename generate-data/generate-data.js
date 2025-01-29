@@ -116,7 +116,7 @@ async function insertBatch() {
         rate: humanBytes(parseInt(totalBytes/(duration/1000/60)))      };
       if (logs) {
         console.log(msg);
-	data.log = msg; 
+        data.log = msg; 
       }
       var now = new Date().getTime();
       if (now - emitted > 100){
