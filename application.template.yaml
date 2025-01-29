@@ -131,9 +131,21 @@ objects:
             path: /
           initialDelaySeconds: 90
           timeoutSeconds: 3
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                      - elasticsearch
+                  topologyKey: "kubernetes.io/hostname"
         domain:
           cpu:
-            cores: 2
+            cores: 4
             sockets: 1
             threads: 2
           devices:
