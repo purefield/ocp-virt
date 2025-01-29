@@ -6,6 +6,7 @@ metadata:
 users:
   - therevoman
   - daniel
+  - thomasphall
 ---
 kind: Project
 apiVersion: project.openshift.io/v1
