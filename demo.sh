@@ -43,16 +43,17 @@ __ "Import setup template into cluster" 4
 cmd oc apply -f setup.template.yaml -n openshift
 __ "Process parameters and apply" 4
 cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
+___ "We use our imported setup template to instanciate our environment"
 
 __ "Create virtual machines" 3
 __ "Import vm template into cluster" 4
 cmd oc apply -f vm.template.yaml -n openshift
 for i in $(seq 0 $((vms -1))); do
 name=$(printf "es-master%02d" "$i")
-__ "$name" 4
-__ "Process parameters and apply" 4
+__ "Process parameters for $name and apply" 4
 cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 done
+___ "We created $vms VMs using our vm template"
 
 __ "Run demo:" 2
 __ "Wait for virtual machines" 3
@@ -69,13 +70,25 @@ __ "Confirm elasticsearch cluster is healthy" 3
 cmd ./elasticsearch/demo.sh
 ___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?"
 
-__ "What did we create?" 2
-cmd oc get all -l demo=ocp-virt -n $NAMESPACE
-
 __ "Check elasticsearch on es-master vms via RHEL container" 3
 for i in $(seq 0 $((vms -1))); do
   name=$(printf "es-master%02d" "$i")
-  cmd 'oc rsh -n copy-cert pod/ubi9 ssh -o StrictHostKeyChecking=accept-new elasticsearch@'$name' systemctl status elasticsearch | egrep Active -B2'
+  cmd 'oc rsh -n copy-cert pod/ubi9 ssh -o StrictHostKeyChecking=accept-new elasticsearch@'$name' systemctl status elasticsearch | egrep Active -B2 --color=always'
 done
+___ "Are all Elasticsearch services healthy?"
+
+__ "What did we create?" 2
+kinds=$(grep '\- kind' *.template.yaml -h | sort -n | uniq | sed 's/ //g' | cut -d':' -f 2 | paste -sd "," - )
+oc get $kinds -l demo=ocp-virt -n $NAMESPACE | egrep --color=always -i "^($(echo $kinds | sed 's/,/|/g' ))" -B10 -A10 | GREP_COLOR='01;36' egrep --color=always 'es-master|elasticsearch|data-generator|coordinate|kibana|windows2019|cockpit' -B10 -A10
 
 __ "Have fun storming the castle!" 1
+_? "Open demo urls in Chrome?" openChrome yes
+if [[ "$openChrome" == "yes" ]]; then
+    /opt/google/chrome/chrome --incognito \
+        https://es-master00.apps.virt.ola.purefield.nl \
+        https://data-generator.apps.virt.ola.purefield.nl \
+        https://kibana.apps.virt.ola.purefield.nl \
+        https://github.com/purefield/ocp-virt/commit/23a92611a631008ff5fe77a122f63ed34f3a8d79 \
+        https://console-openshift-console.apps.virt.ola.purefield.nl/catalog/ns/default?category=other&catalogType=Template
+        https://grafana-open-cluster-management-observability.apps.acm.ola.purefield.nl/d/WfJLo3rSz/executive-dashboards-single-cluster-view?orgId=1
+fi
