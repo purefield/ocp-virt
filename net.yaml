@@ -29,17 +29,11 @@ spec:
     "cniVersion": "0.3.1",
     "name": "vlan-777-bond0",
     "type": "cnv-bridge",
-    "bridge": "bond0.777",
+    "master": "bond0.777",
     "macspoofchk": false,
     "preserveDefaultVlan": true,
     "ipam": {
-      "type": "host-local",
-      "subnet": "192.168.1.0/24",
-      "rangeStart": "192.168.1.100",
-      "rangeEnd": "192.168.1.200",
-      "routes": [
-        { "dst": "0.0.0.0/0" }
-      ],
-      "gateway": "192.168.1.1"
+      "type": "whereabouts",
+      "range": "192.168.99.0/24"
     }
   }'
