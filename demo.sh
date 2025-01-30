@@ -20,14 +20,25 @@ _? "Key" SUBSCRIPTION_KEY key $SUBSCRIPTION_KEY
 _? "ORG" SUBSCRIPTION_ORG org $SUBSCRIPTION_ORG
 
 __ "Create resources" 2
-export SSH_PUBLIC_KEY="$(cat ~/.ssh/id_rsa.pub)"
+if [ ! -s ./ssh.id_rsa ]; then 
+  __ "Create ssh keys" 3
+  cmd 'ssh-keygen -m PEM -N ""  -f ./ssh.id_rsa'
+fi
+export SSH_PUBLIC_KEY="$(cat ssh.id_rsa.pub)"
+export SSH_PRIVATE_KEY="$(cat ssh.id_rsa)"
 
 __ "Create namespace" 3
 cmd "oc new-project $NAMESPACE"
 
 __ "Create common resources" 3
 cmd oc apply -f installation.template.yaml -n openshift
-cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
+cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
+
+if [[ "$(oc get secrets/wildcard-cert -n $NAMESPACE -o name 2>/dev/null)" != 'secret/wildcard-cert' ]]; then 
+ __ "For demo purpose re-use the ingress cert" 3
+ item="secret/letsencrypt-prod-private-key -n openshift-ingress"
+ cmd "oc get $item -o yaml | sed 's/namespace: openshift-ingress/namespace: $NAMESPACE/' | sed 's/name: .*/name: wildcard-cert/' | oc apply -f -"
+fi
 
 __ "Create virtual machines" 3
 cmd oc apply -f application.template.yaml -n openshift
@@ -54,5 +65,11 @@ ___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?"
 
 __ "What did we create?" 2
 cmd oc get all -l demo=ocp-virt -n $NAMESPACE
+
+__ "Check elasticsearch on es-master vms via RHEL container" 3
+for i in $(seq 0 $((vms -1))); do
+  name=$(printf "es-master%02d" "$i")
+  cmd 'oc rsh -n copy-cert pod/ubi9 ssh -o StrictHostKeyChecking=accept-new elasticsearch@'$name' systemctl status elasticsearch | egrep Active -B2'
+done
 
 __ "Have fun storming the castle!" 1

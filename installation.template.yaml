@@ -32,7 +32,7 @@ objects:
     name: id-rsa
     namespace: ${NAMESPACE}
   stringData:
-    demo.id_rsa: ${SSH_PUBLIC_KEY}
+    demo.id_rsa: ${SSH_PRIVATE_KEY}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -822,6 +822,9 @@ parameters:
   required: true
 - name: SSH_PUBLIC_KEY
   description: SSH Public Key
+  required: true
+- name: SSH_PRIVATE_KEY
+  description: SSH Private Key
   required: true
 labels:
   demo: ocp-virt

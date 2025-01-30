@@ -220,7 +220,8 @@ objects:
               name: install-scripts
           - name: ssl-cert-cockpit
             secret:
-              secretName: ssl-cert-cockpit-${VMNAME}
+              # secretName: ssl-cert-cockpit-${VMNAME}
+              secretName: wildcard-cert
 - kind: Route
   apiVersion: route.openshift.io/v1
   metadata:
