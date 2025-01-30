@@ -41,16 +41,16 @@ __ "Run demo:" 2
 __ "Wait for virtual machines" 3
 oo $((vms + 1)) "oc get vmi -n $NAMESPACE --no-headers=true | wc -l"
 
-__ "Wait for elasticsearch" 3
-jsonpath="{range .items[*]}{@.metadata.name}{': '}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
+__ "Wait for elasticsearch vms to be ready" 3
+jsonpath="{range .items[*]}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
 oo $vms 'oc get pods -n '$NAMESPACE' -l app=elasticsearch,elasticsearch=master -o jsonpath="'$jsonpath'" | grep True | wc -l'
+
+__ "Wait for elasticsearch cluster to be ready" 3
+oo $vms "./elasticsearch/demo.sh | grep es-master | wc -l"
 
 __ "Confirm elasticsearch cluster is healthy" 3
 cmd ./elasticsearch/demo.sh
-___ "Are the $vms VMs and Coordinate Container up?"
-
-__ "Apply elasticsearch index pattern" 3
-cmd ./elasticsearch/kibana.data-view.sh
+___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?"
 
 __ "What did we create?" 2
 cmd oc get all -l demo=ocp-virt -n $NAMESPACE

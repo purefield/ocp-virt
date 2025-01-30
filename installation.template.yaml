@@ -761,12 +761,12 @@ objects:
             - "-c"
             - |
               echo "Waiting for Elasticsearch to be ready..."
-              until curl -s -o /dev/null "http://coordinate:9200/_cluster/health"; do
+              until curl -so /dev/null "http://coordinate:9200/_cluster/health"; do
                 sleep 5;
               done
 
               echo "Creating the default index template..."
-              curl -X PUT "http://coordinate:9200/_index_template/default_template" -H "Content-Type: application/json" -d '
+              curl -sX PUT "http://coordinate:9200/_index_template/default_template" -H "Content-Type: application/json" -d '
               {
                 "index_patterns": ["generated"],
                 "template": {
@@ -784,9 +784,22 @@ objects:
               }'
 
               echo "Deleting the 'generated' index..."
-              curl -X DELETE "http://coordinate:9200/generated"
+              curl -sX DELETE "http://coordinate:9200/generated"
 
               echo "Elasticsearch index template setup complete."
+
+              echo "Create Kibana data view"
+              curl -sX POST "http://kibana:5601/api/data_views/data_view" -H "kbn-xsrf: true" -H "Content-Type: application/json" -d '
+              {
+                "data_view": {
+                  "name":"demo",
+                  "title": "generated*",
+                  "timeFieldName": "timestamp"
+                }
+              }'
+
+              echo "Kibana view setup complete."
+
 parameters:
 - name: NAMESPACE
   description: Namespace to use
