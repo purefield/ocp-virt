@@ -58,6 +58,8 @@ objects:
   metadata:
     name: ${VMNAME}
     namespace: ${NAMESPACE}
+    annotations:
+      service.beta.openshift.io/serving-cert-secret-name: ssl-cert-cockpit-${VMNAME}
   spec:
     selector:
       node: ${VMNAME}
@@ -167,7 +169,7 @@ objects:
                 serial: 0000sh
               - disk:
                   bus: virtio
-                name: letsencrypt
+                name: ssl-cert-cockpit
                 serial: 00cert
               - disk:
                   bus: virtio
@@ -189,13 +191,14 @@ objects:
             pod: {}
         terminationGracePeriodSeconds: 180
         volumes:
-          - dataVolume:
+          - name: rootdisk
+            dataVolume:
               name: ${VMNAME}
-            name: rootdisk
-          - dataVolume:
+          - name: data
+            dataVolume:
               name: ${VMNAME}-data
-            name: data
-          - cloudInitNoCloud:
+          - name: cloudinitdisk
+            cloudInitNoCloud:
               userData: |-
                 #cloud-config
                 hostname: ${VMNAME}
@@ -209,16 +212,15 @@ objects:
                 chpasswd: { expire: False }
                 ssh_authorized_keys:
                  - ${SSH_PUBLIC_KEY}
-            name: cloudinitdisk
-          - configMap:
+          - name: elasticsearch-yaml
+            configMap:
               name: ${VMNAME}-conf
-            name: elasticsearch-yaml
-          - configMap:
+          - name: install-scripts
+            configMap:
               name: install-scripts
-            name: install-scripts
-          - secret:
-              secretName: letsencrypt
-            name: letsencrypt
+          - name: ssl-cert-cockpit
+            secret:
+              secretName: ssl-cert-cockpit-${VMNAME}
 - kind: Route
   apiVersion: route.openshift.io/v1
   metadata:
