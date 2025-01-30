@@ -21,31 +21,37 @@ _? "ORG" SUBSCRIPTION_ORG org $SUBSCRIPTION_ORG
 
 __ "Create resources" 2
 if [ ! -s ./ssh.id_rsa ]; then 
-  __ "Create ssh keys" 3
-  cmd 'ssh-keygen -m PEM -N ""  -f ./ssh.id_rsa'
+__ "Create ssh keys" 3
+cmd 'ssh-keygen -m PEM -N ""  -f ./ssh.id_rsa'
 fi
 export SSH_PUBLIC_KEY="$(cat ssh.id_rsa.pub)"
 export SSH_PRIVATE_KEY="$(cat ssh.id_rsa)"
 
+if [[ "$(oc get project $NAMESPACE -o=jsonpath='{.metadata.name}' 2>/dev/null)" != $NAMESPACE ]]; then
 __ "Create namespace" 3
 cmd "oc new-project $NAMESPACE"
-
-__ "Create common resources" 3
-cmd oc apply -f installation.template.yaml -n openshift
-cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
-
-if [[ "$(oc get secrets/wildcard-cert -n $NAMESPACE -o name 2>/dev/null)" != 'secret/wildcard-cert' ]]; then 
- __ "For demo purpose re-use the ingress cert" 3
- item="secret/letsencrypt-prod-private-key -n openshift-ingress"
- cmd "oc get $item -o yaml | sed 's/namespace: openshift-ingress/namespace: $NAMESPACE/' | sed 's/name: .*/name: wildcard-cert/' | oc apply -f -"
 fi
 
+__ "Create common resources" 3
+if [[ "$(oc get secrets/wildcard-cert -n $NAMESPACE -o name 2>/dev/null)" != 'secret/wildcard-cert' ]]; then 
+__ "For demo purpose re-use the ingress cert" 4
+item="secret/letsencrypt-prod-private-key -n openshift-ingress"
+cmd "oc get $item -o yaml | sed 's/namespace: openshift-ingress/namespace: $NAMESPACE/' | sed 's/name: .*/name: wildcard-cert/' | oc apply -f -"
+fi
+
+__ "Import setup template into cluster" 4
+cmd oc apply -f setup.template.yaml -n openshift
+__ "Process parameters and apply" 4
+cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
+
 __ "Create virtual machines" 3
-cmd oc apply -f application.template.yaml -n openshift
+__ "Import vm template into cluster" 4
+cmd oc apply -f vm.template.yaml -n openshift
 for i in $(seq 0 $((vms -1))); do
-  name=$(printf "es-master%02d" "$i")
-  __ "$name" 4
-  cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
+name=$(printf "es-master%02d" "$i")
+__ "$name" 4
+__ "Process parameters and apply" 4
+cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 done
 
 __ "Run demo:" 2
