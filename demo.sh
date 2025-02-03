@@ -69,18 +69,25 @@ oo $vms "./elasticsearch/demo.sh | grep es-master | wc -l"
 
 __ "Confirm elasticsearch cluster is healthy" 3
 cmd ./elasticsearch/demo.sh
-___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?"
+___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?" 10
 
 __ "Check elasticsearch on es-master vms via RHEL container" 3
 for i in $(seq 0 $((vms -1))); do
   name=$(printf "es-master%02d" "$i")
   cmd 'oc rsh -n '$NAMESPACE' pod/ubi9 ssh -o StrictHostKeyChecking=accept-new elasticsearch@'$name' systemctl status elasticsearch | egrep Active -B2 --color=always'
 done
-___ "Are all Elasticsearch services healthy?"
+___ "Are all Elasticsearch services healthy?" 10
 
 __ "What did we create?" 2
 kinds=$(grep '\- kind' *.template.yaml -h | sort -n | uniq | sed 's/ //g' | cut -d':' -f 2 | paste -sd "," - )
-oc get $kinds -l demo=ocp-virt -n $NAMESPACE | egrep --color=always -i "^($(echo $kinds | sed 's/,/|/g' ))" -B10 -A10 | GREP_COLOR='01;36' egrep --color=always 'es-master|elasticsearch|data-generator|coordinate|kibana|windows2019|cockpit' -B10 -A10
+kindsMatch=$(echo $kinds | sed 's/,/|/g' )
+names='es-master|elasticsearch|data-generator|coordinate|kibana|windows2019|cockpit'
+echo "$kinds"
+echo "$kindsMatch"
+echo "$names"
+oc get $kinds -l demo=ocp-virt -n $NAMESPACE | \
+   egrep --color=always -i "^($kindsMatch)" -B10 -A10 | \
+   GREP_COLOR='01;36' egrep --color=always $names -B10 -A10
 
 __ "Have fun storming the castle!" 1
 _? "Open demo urls in Chrome?" openChrome yes
