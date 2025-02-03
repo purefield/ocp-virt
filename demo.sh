@@ -1,6 +1,7 @@
 . ./format/format.sh
 NAMESPACE=$1
 VMS=$2
+CUSTOMER=${3:-Our Valued Customer}
 __ "OpneShift Virtualization Demo" 1
 __ "Configuration" 2
 
@@ -29,7 +30,7 @@ export SSH_PRIVATE_KEY="$(cat ssh.id_rsa)"
 
 if [[ "$(oc get project $NAMESPACE -o=jsonpath='{.metadata.name}' 2>/dev/null)" != $NAMESPACE ]]; then
 __ "Create namespace" 3
-cmd "oc new-project $NAMESPACE --display-name='Our Valued Customer'"
+cmd "oc new-project $NAMESPACE --display-name='$CUSTOMER'"
 fi
 
 __ "Create common resources" 3
@@ -43,7 +44,7 @@ __ "Import setup template into cluster" 4
 cmd oc apply -f setup.template.yaml -n openshift
 __ "Process parameters and apply" 4
 cmd 'oc process ocp-virt-demo-setup-template -n openshift -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SUBSCRIPTION_ORG=$SUBSCRIPTION_ORG -p SUBSCRIPTION_KEY=$SUBSCRIPTION_KEY -p SSH_PRIVATE_KEY="$SSH_PRIVATE_KEY" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" -p SHARDS=$vms | oc apply -f -'
-___ "We use our imported setup template to instantiate our environment"
+___ "We use our imported setup template to instantiate our environment" 10
 
 __ "Create virtual machines" 3
 __ "Import vm template into cluster" 4
@@ -53,7 +54,7 @@ name=$(printf "es-master%02d" "$i")
 __ "Process parameters for $name and apply" 4
 cmd 'oc process ocp-virt-demo-vms-template -n openshift -p VMNAME='$name' -p NAMESPACE='$NAMESPACE' -p BASEDOMAIN="'$BASEDOMAIN'" -p SSH_PUBLIC_KEY="$SSH_PUBLIC_KEY" | oc apply -f -'
 done
-___ "We created $vms VMs using our vm template"
+___ "We created $vms VMs using our vm template" 10
 
 __ "Run demo:" 2
 __ "Wait for virtual machines" 3
