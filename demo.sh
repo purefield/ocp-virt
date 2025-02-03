@@ -82,9 +82,6 @@ __ "What did we create?" 2
 kinds=$(grep '\- kind' *.template.yaml -h | sort -n | uniq | sed 's/ //g' | cut -d':' -f 2 | paste -sd "," - )
 kindsMatch=$(echo $kinds | sed 's/,/|/g' )
 names='es-master|elasticsearch|data-generator|coordinate|kibana|windows2019|cockpit'
-echo "$kinds"
-echo "$kindsMatch"
-echo "$names"
 oc get $kinds -l demo=ocp-virt -n $NAMESPACE | \
    egrep --color=always -i "^($kindsMatch)" -B10 -A10 | \
    GREP_COLOR='01;36' egrep --color=always $names -B10 -A10
