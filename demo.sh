@@ -95,6 +95,6 @@ if [[ "$openChrome" == "yes" ]]; then
         https://data-generator.apps.virt.ola.purefield.nl \
         https://kibana.apps.virt.ola.purefield.nl/app/discover\#/ \
         https://github.com/purefield/ocp-virt/commit/23a92611a631008ff5fe77a122f63ed34f3a8d79 \
-        https://console-openshift-console.apps.virt.ola.purefield.nl/catalog/ns/default?category=other\&catalogType=Template
+        https://console-openshift-console.apps.virt.ola.purefield.nl/catalog/ns/default?category=other\&catalogType=Template \
         https://grafana-open-cluster-management-observability.apps.acm.ola.purefield.nl/d/WfJLo3rSz/executive-dashboards-single-cluster-view?orgId=1
 fi

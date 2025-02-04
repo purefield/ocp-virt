@@ -23,7 +23,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: vlan-777-bond0
-  namespace: demo
+  namespace: engineering-vms
 spec:
   config: '{
     "cniVersion": "0.3.1",
