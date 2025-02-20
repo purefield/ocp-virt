@@ -761,9 +761,15 @@ objects:
             - "-c"
             - |
               echo "Waiting for Elasticsearch to be ready..."
-              until curl -so /dev/null "http://coordinate:9200/_cluster/health"; do
+              until curl -LX GET -so /dev/null http://coordinate:9200/_cluster/health; do
+                echo "Not ready yet, sleeping for 5 sec"
                 sleep 5;
               done
+
+              if curl -Lfso /dev/null http://coordinate:9200/_index_template/default_template; then
+                echo "Default Template already setup, exiting"
+                exit 0
+              fi
 
               echo "Creating the default index template..."
               curl -sX PUT "http://coordinate:9200/_index_template/default_template" -H "Content-Type: application/json" -d '
