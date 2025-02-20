@@ -58,7 +58,7 @@ ___ "We created $vms VMs using our vm template" 10
 
 __ "Run demo:" 2
 __ "Wait for virtual machines" 3
-oo $((vms + 1)) "oc get vmi -n $NAMESPACE --no-headers=true | wc -l"
+oo $((vms + 1)) "oc get vmi -n $NAMESPACE --no-headers=true --ignore-not-found=true | wc -l"
 
 __ "Wait for elasticsearch vms to be ready" 3
 jsonpath="{range .items[*]}{@.status.conditions[?(@.type=='Ready')].status}{'\n'}"
