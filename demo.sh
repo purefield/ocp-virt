@@ -78,8 +78,8 @@ for i in $(seq 0 $((vms -1))); do
 done
 ___ "Are all Elasticsearch services healthy?" 10
 
-__ "Our Cronjob setup Elasticseach Index and Kibana View" 3
-cmd oc logs -n aardvark -l job-name=elasticsearch-init-job --since=30m
+__ "Cronjob logs from setting up Elasticseach Index and Kibana View" 3
+cmd oc logs -n aardvark -l job-name=elasticsearch-init-job
 
 __ "What did we create?" 2
 kinds=$(grep '\- kind' *.template.yaml -h | sort -n | uniq | sed 's/ //g' | cut -d':' -f 2 | paste -sd "," - )
