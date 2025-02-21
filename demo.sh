@@ -101,3 +101,10 @@ if [[ "$openChrome" == "yes" ]]; then
         https://console-openshift-console.apps.virt.ola.purefield.nl/catalog/ns/default?category=other\&catalogType=Template \
         https://grafana-open-cluster-management-observability.apps.acm.ola.purefield.nl/d/WfJLo3rSz/executive-dashboards-single-cluster-view?orgId=1
 fi
+
+exit 0
+poc/demo goals
+- the speed to market for new applications with a tight inner and outer loop
+- scalability of our platform to support fluctuation in demand and states as they come online
+- consistency of the platform to support existing and future development
+- operational excellence and automation to scale the business without stretching the staff
