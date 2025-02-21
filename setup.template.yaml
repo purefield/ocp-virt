@@ -761,7 +761,7 @@ objects:
             - "-c"
             - |
               echo "Waiting for Elasticsearch to be ready..."
-              until curl -LX GET -so /dev/null http://coordinate:9200/_cluster/health; do
+              until curl -LfX GET -so /dev/null http://coordinate:9200/_cluster/health; do
                 echo "Not ready yet, sleeping for 5 sec"
                 sleep 5;
               done
@@ -796,6 +796,12 @@ objects:
 
               echo "Elasticsearch index template setup complete."
               echo
+
+              echo "Waiting for Kibana to be ready..."
+              until curl -LfX GET -so /dev/null http://kibana:5601/api/status; do
+                echo "Not ready yet, sleeping for 5 sec"
+                sleep 5;
+              done
 
               echo "Create Kibana data view"
               curl -sX POST "http://kibana:5601/api/data_views/data_view" -H "kbn-xsrf: true" -H "Content-Type: application/json" -d '
