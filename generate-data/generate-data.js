@@ -24,6 +24,7 @@ var batch = process.env.DATA_BATCH || 100; // Number of inserts per batch
 var logs  = true;
 var start = new Date().getTime();
 var totalBytes = 0;
+var deltaBytes = 0;
 var intervalId;
 var emitted = start;
 var randomDoc = {};
@@ -109,19 +110,22 @@ async function insertBatch() {
       var bytes = v8.serialize(body).length;
       var duration = new Date().getTime() - start;
       totalBytes += bytes;
+      deltaBytes += bytes;
       bytes = humanBytes(bytes);
       var msg = `Inserted ${batch} documents ${bytes} into ${index} on ${es_node}:${es_port} (s:${size} r:${rate})`
+      var now = new Date().getTime();
       var data = { 
         bytes: humanBytes(totalBytes),
-        rate: humanBytes(parseInt(totalBytes/(duration/1000/60)))      };
+        avg: humanBytes(parseInt(totalBytes/(duration/1000/60)))};
+        rate: humanBytes(parseInt(deltaBytes/(now-emitted/1000/60)))};
       if (logs) {
         console.log(msg);
         data.log = msg; 
       }
-      var now = new Date().getTime();
       if (now - emitted > 100){
        io.emit('data', data);
        emitted = now;
+       deltaBytes = 0;
       }
     }
   } catch (error) {
