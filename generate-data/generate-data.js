@@ -116,8 +116,9 @@ async function insertBatch() {
       var now = new Date().getTime();
       var data = { 
         bytes: humanBytes(totalBytes),
-        avg: humanBytes(parseInt(totalBytes/(duration/1000/60)))};
-        rate: humanBytes(parseInt(deltaBytes/(now-emitted/1000/60)))};
+        avg: humanBytes(parseInt(totalBytes/(duration/1000/60))),
+        rate: humanBytes(parseInt(deltaBytes/(now-emitted/1000/60)))
+      };
       if (logs) {
         console.log(msg);
         data.log = msg; 
