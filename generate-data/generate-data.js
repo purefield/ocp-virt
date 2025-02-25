@@ -123,7 +123,7 @@ async function insertBatch() {
         console.log(msg);
         data.log = msg; 
       }
-      if (now - emitted > 100){
+      if (now - emitted > 300){
        io.emit('data', data);
        emitted = now;
        deltaBytes = 0;
