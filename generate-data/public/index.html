@@ -14,14 +14,14 @@
     // Log event listener
     socket.on('data', (data) => {
       const bytesElement = document.getElementById('bytes');
-      bytesElement.textContent = data.bytes;
       const avgElement = document.getElementById('avg');
-      avgElement.textContent = data.avg;
       const rateElement = document.getElementById('rate');
+      bytesElement.textContent = data.bytes;
+      avgElement.textContent = data.avg;
       rateElement.textContent = data.rate;
       if (data.log){
          const logElement    = document.createElement('div');
-     const logsArea      = document.getElementById('logs');
+         const logsArea      = document.getElementById('logs');
          logElement.textContent = data.log;
          while (logsArea.childElementCount > 10) {
            logsArea.removeChild(logsArea.lastChild);
@@ -43,8 +43,8 @@
   <h1>
       Data Generator 
       <span id="bytes"></span> total 
-      <span id="avg"></span>/min/avg
-      <span id="rate"></span>/min
+      <span id="avg"></span>/min/avg 
+      <span id="rate"></span>/sec
   </h1>
   <div>
     <div>
