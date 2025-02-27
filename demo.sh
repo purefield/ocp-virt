@@ -2,7 +2,7 @@
 NAMESPACE=$1
 VMS=$2
 CUSTOMER=${3:-Our Valued Customer}
-__ "OpneShift Virtualization Demo" 1
+__ "OpenShift Virtualization Demo" 1
 __ "Configuration" 2
 
 __ "Namespace" 3
