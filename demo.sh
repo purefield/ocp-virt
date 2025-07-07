@@ -36,7 +36,8 @@ fi
 __ "Create common resources" 3
 if [[ "$(oc get secrets/wildcard-cert -n $NAMESPACE -o name 2>/dev/null)" != 'secret/wildcard-cert' ]]; then 
 __ "For demo purpose re-use the ingress cert" 4
-item="secret/letsencrypt-prod-private-key -n openshift-ingress"
+certName=$(oc get IngressController default -n openshift-ingress-operator -o=jsonpath='{.spec.defaultCertificate.name}')
+item="secret/$certName -n openshift-ingress"
 cmd "oc get $item -o yaml | sed 's/namespace: openshift-ingress/namespace: $NAMESPACE/' | sed 's/name: .*/name: wildcard-cert/' | oc apply -f -"
 fi
 
