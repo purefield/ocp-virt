@@ -19,6 +19,7 @@ sudo dnf install -y git
 git clone https://github.com/purefield/opc-virt.git ~/demo
 cd ~/demo/
 ./setup.sh
+oc apply -f windows/windows2019.yaml
 ```
 
 ### Demo Prep
