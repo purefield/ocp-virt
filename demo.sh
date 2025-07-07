@@ -94,16 +94,16 @@ oc get $kinds -l demo=ocp-virt -n $NAMESPACE | \
 
 __ "Have fun storming the castle!" 1
 _? "Open demo urls in Chrome?" openChrome yes
-urls=$(echo https://es-master00.apps.virt.ola.purefield.nl/system/services#/elasticsearch.service?name=elastic \
-    https://data-generator.apps.virt.ola.purefield.nl \
-    https://kibana.apps.virt.ola.purefield.nl/app/discover\#/ \
+urls=$(echo https://es-master00.$BASEDOMAIN/system/services#/elasticsearch.service?name=elastic \
+    https://data-generator.$BASEDOMAIN \
+    https://kibana.$BASEDOMAIN/app/discover\#/ \
     https://github.com/purefield/ocp-virt/commit/23a92611a631008ff5fe77a122f63ed34f3a8d79 \
-    https://console-openshift-console.apps.virt.ola.purefield.nl/catalog/ns/default?category=other\&catalogType=Template \
+    https://console-openshift-console.$BASEDOMAIN/catalog/ns/default?category=other\&catalogType=Template \
     https://grafana-open-cluster-management-observability.apps.acm.ola.purefield.nl/d/WfJLo3rSz/executive-dashboards-single-cluster-view?orgId=1)
 if [[ "$openChrome" == "yes" ]]; then
     /opt/google/chrome/chrome --new-window --profile-directory=Default $urls
 else
-    echo $urls
+    echo $urls | sed 's/ /\n/g'
 fi
 
 exit 0
