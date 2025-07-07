@@ -73,6 +73,8 @@ cmd ./elasticsearch/demo.sh
 ___ "Did $vms VMs and Coordinate Container form an Elasticsearch cluster?" 10
 
 __ "Check elasticsearch on es-master vms via RHEL container" 3
+__ "Wait for ssh to be available in ubi9 container" 4
+oo 1 "oc rsh -n '$NAMESPACE' pod/ubi9 which ssh | grep '/usr/bin/ssh' | wc -l'
 for i in $(seq 0 $((vms -1))); do
   name=$(printf "es-master%02d" "$i")
   cmd 'oc rsh -n '$NAMESPACE' pod/ubi9 ssh -o StrictHostKeyChecking=accept-new elasticsearch@'$name' systemctl status elasticsearch | egrep Active -B2 --color=always'
