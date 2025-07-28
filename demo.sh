@@ -82,7 +82,7 @@ done
 ___ "Are all Elasticsearch services healthy?" 10
 
 __ "Cronjob logs from setting up Elasticseach Index and Kibana View" 3
-cmd oc logs -n aardvark -l job-name=elasticsearch-init-job
+cmd oc logs -n $NAMESPACE -l job-name=elasticsearch-init-job
 
 __ "What did we create?" 2
 kinds=$(grep '\- kind' *.template.yaml -h | sort -n | uniq | sed 's/ //g' | cut -d':' -f 2 | paste -sd "," - )
