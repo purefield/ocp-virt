@@ -1,5 +1,7 @@
 Openshift Virtualization Demo running Elasticsearch on Mixed Pods (VMs and Containers)
 
+[Elasticsearch Cluster Overview Video](https://youtu.be/-9GNXAxA4Pc)
+
 ![Elasticsearch Cluster Overview](hybrid-virt-elasticsearch.png)
 
 ### Dependencies:
